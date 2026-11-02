@@ -1,0 +1,6 @@
+offline_search_provider: fixture
+max_result_bytes: 200000
+web_fetch_timeout_seconds: 10
+web_fetch_max_bytes: 1000000
+web_fetch_max_redirects: 3
+

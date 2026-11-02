@@ -1,0 +1,11 @@
+name: deepseek-v4-flash
+label: DeepSeek V4 Flash
+status: active
+input_types:
+  - text/plain
+  - image/*
+output_types:
+  - text/plain
+  - application/x-thinking
+context_size: 1000000
+output_size: 393216

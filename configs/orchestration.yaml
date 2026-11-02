@@ -1,0 +1,5 @@
+version: orchestration-v1
+max_tasks: 12
+max_replans: 2
+require_semantic_coverage_check: true
+

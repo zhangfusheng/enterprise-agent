@@ -1,0 +1,15 @@
+version: agents-v1
+roles:
+  research:
+    capabilities: [web_search, web_fetch, workspace_read]
+    tools: [web_search, web_fetch, workspace_read]
+    can_delegate_to: [analysis]
+  analysis:
+    capabilities: [analysis, calculate, save_report]
+    tools: [calculate, save_report]
+    can_delegate_to: []
+  subagent:
+    capabilities: [analysis, calculate]
+    tools: [calculate]
+    can_delegate_to: []
+

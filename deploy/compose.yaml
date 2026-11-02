@@ -1,0 +1,72 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: enterprise_agent
+      POSTGRES_USER: enterprise_agent
+      POSTGRES_PASSWORD: enterprise_agent_dev_only
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U enterprise_agent -d enterprise_agent"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: alembic upgrade head
+    environment:
+      EA_DATABASE_URL: postgresql+psycopg://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000
+    environment:
+      EA_ENV: development
+      EA_DATABASE_URL: postgresql+psycopg://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
+      EA_CHECKPOINT_URL: postgresql://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
+      EA_ARTIFACT_ROOT: /data/artifacts
+      EA_OFFLINE_MODE: "true"
+      EA_DEV_IDENTITY: "true"
+    volumes:
+      - artifacts:/data/artifacts
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: python -m apps.worker.main
+    environment:
+      EA_ENV: development
+      EA_DATABASE_URL: postgresql+psycopg://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
+      EA_CHECKPOINT_URL: postgresql://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
+      EA_ARTIFACT_ROOT: /data/artifacts
+      EA_OFFLINE_MODE: "true"
+      EA_DEV_IDENTITY: "true"
+    volumes:
+      - artifacts:/data/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-data:
+  artifacts:
+

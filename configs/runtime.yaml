@@ -1,0 +1,9 @@
+max_model_calls: 40
+max_tool_calls: 80
+max_steps: 100
+max_runtime_seconds: 300
+lease_seconds: 30
+lease_renew_interval_seconds: 10
+max_claim_attempts: 8
+max_execution_attempts: 5
+max_lease_losses: 5

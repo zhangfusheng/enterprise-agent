@@ -1,0 +1,82 @@
+providers:
+  - name: offline
+    protocol: fake
+    config_version: "1"
+  - name: openai_compatible
+    protocol: openai_compatible
+    vendor: openai_chat
+    endpoint: https://api.openai.com/v1
+    credential_ref: OPENAI_API_KEY
+    config_version: "1"
+  - name: anthropic
+    protocol: anthropic
+    vendor: anthropic
+    credential_ref: ANTHROPIC_API_KEY
+    config_version: "1"
+  - name: dashscope
+    protocol: dashscope
+    vendor: dashscope
+    endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1
+    credential_ref: DASHSCOPE_API_KEY
+    config_version: "1"
+  - name: doubao
+    protocol: doubao
+    vendor: doubao
+    endpoint: https://ark.cn-beijing.volces.com/api/v3
+    credential_ref: ARK_API_KEY
+    config_version: "1"
+  - name: deepseek
+    protocol: deepseek
+    vendor: deepseek
+    endpoint: https://api.deepseek.com
+    credential_ref: DEEPSEEK_API_KEY
+    config_version: "1"
+profiles:
+  - name: offline-default
+    provider: offline
+    model_name: deterministic-v1
+    capabilities: [structured_output, tool_calling]
+  - name: openai-default
+    provider: openai_compatible
+    model_name: gpt-4o-mini
+    parameters:
+      temperature: 0
+    capabilities: [structured_output, tool_calling]
+  - name: anthropic-default
+    provider: anthropic
+    model_name: claude-3-5-haiku-latest
+    capabilities: [structured_output, tool_calling]
+  - name: qwen-default
+    provider: dashscope
+    model_name: qwen3.8-max
+    timeout_seconds: 120
+    parameters:
+      temperature: 0
+    capabilities: [structured_output, tool_calling]
+  - name: doubao-default
+    provider: doubao
+    model_name: doubao-seed-2-1-pro-260915
+    timeout_seconds: 120
+    parameters:
+      temperature: 0
+    capabilities: [structured_output, tool_calling]
+  - name: deepseek-default
+    provider: deepseek
+    model_name: deepseek-v4-flash
+    timeout_seconds: 120
+    parameters:
+      temperature: 0
+    capabilities: [structured_output, tool_calling]
+bindings:
+  - role: router
+    model_profile: qwen-default
+  - role: planner
+    model_profile: qwen-default
+  - role: supervisor
+    model_profile: qwen-default
+  - role: research
+    model_profile: qwen-default
+  - role: analysis
+    model_profile: qwen-default
+  - role: subagent
+    model_profile: qwen-default

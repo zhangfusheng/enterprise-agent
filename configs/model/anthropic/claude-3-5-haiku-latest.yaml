@@ -1,0 +1,9 @@
+name: claude-3-5-haiku-latest
+label: Claude 3.5 Haiku
+status: active
+input_types:
+  - text/plain
+output_types:
+  - text/plain
+context_size: 200000
+output_size: 8192

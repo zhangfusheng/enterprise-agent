@@ -1,0 +1,49 @@
+{
+  "trace_id": "c66bdb27-1aef-4ecb-8852-87c45f2f357b",
+  "run_id": "run_c5e6bd096c3d4f178821",
+  "input": "查找最新agent 信息",
+  "plans": {
+    "1": {
+      "tasks": [
+        {
+          "task_id": "task_research_latest_agent_info",
+          "agent_role": "research",
+          "depends_on": []
+        },
+        {
+          "task_id": "task_analyze_agent_progress",
+          "agent_role": "analysis",
+          "depends_on": ["task_research_latest_agent_info"]
+        }
+      ]
+    },
+    "2": {
+      "tasks": [
+        {
+          "task_id": "task_research_latest_agent_info",
+          "agent_role": "research",
+          "depends_on": []
+        },
+        {
+          "task_id": "task_analyze_agent_trends",
+          "agent_role": "analysis",
+          "depends_on": ["task_research_latest_agent_info"]
+        }
+      ]
+    }
+  },
+  "first_attempt": {
+    "research_status": "PARTIAL",
+    "unique_sources": 75,
+    "search_calls": 20,
+    "fetch_calls": 30,
+    "fetch_errors": 15,
+    "aggregate_status": "PARTIAL",
+    "replan_count": 1
+  },
+  "second_attempt": {
+    "search_calls": 20,
+    "fetch_calls_attempted": 15,
+    "error": "BudgetExceeded: budget exceeded for tool_calls: 81>80"
+  }
+}

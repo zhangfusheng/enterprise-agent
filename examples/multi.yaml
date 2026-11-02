@@ -1,0 +1,3 @@
+input: "请搜索网页并分析，生成报告"
+expected_route: multi
+

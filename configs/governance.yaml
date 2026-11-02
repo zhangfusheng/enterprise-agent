@@ -1,0 +1,5 @@
+allowed_roles: [research, analysis, subagent]
+allowed_tools: [web_search, web_fetch, workspace_read, calculate, save_report]
+max_agent_depth: 2
+max_agents: 8
+

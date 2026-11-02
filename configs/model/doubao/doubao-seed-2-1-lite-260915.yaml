@@ -1,0 +1,13 @@
+name: doubao-seed-2-1-lite-260915
+label: Doubao Seed 2.1 Lite
+status: active
+input_types:
+  - text/plain
+  - image/*
+  - video/*
+  - audio/*
+output_types:
+  - text/plain
+  - application/x-thinking
+context_size: 1048576
+output_size: 262144

@@ -1,0 +1,10 @@
+- name: direct
+  input: "请直接回答什么是幂等性？"
+  expected_route: direct
+- name: single_research
+  input: "请搜索网页并返回来源"
+  expected_route: single
+- name: multi_report
+  input: "请搜索网页并分析，生成报告"
+  expected_route: multi
+

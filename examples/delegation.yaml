@@ -1,0 +1,5 @@
+input: "请搜索网页并分析，生成报告"
+constraints:
+  request_delegation: true
+expected: "Research Worker 委派 Analysis 子 Agent，并保存报告"
+

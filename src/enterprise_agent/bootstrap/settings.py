@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     research_max_candidate_sources: int = Field(default=30, ge=1)
     research_min_content_length: int = Field(default=80, ge=1)
     research_require_fetch: bool = True
+    research_plan_max_concurrency: int = Field(default=3, ge=1)
+    research_plan_repair_attempts: int = Field(default=1, ge=0, le=2)
+    research_plan_allow_partial_results: bool = True
     search_primary_provider: str = "tavily"
     search_fallback_providers: str = ""
     search_provider_timeout_seconds: float = Field(default=8.0, gt=0)

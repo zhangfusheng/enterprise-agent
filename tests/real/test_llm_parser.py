@@ -41,6 +41,7 @@ def live_parser(tmp_path_factory: pytest.TempPathFactory) -> Iterator[tuple[Cont
             checkpoint_url=f"sqlite:///{root}/checkpoint.sqlite",
             artifact_root=root / "artifacts",
             offline_mode=False,
+            allow_external_network=True,
         )
     )
     parser = _request_parser(container)

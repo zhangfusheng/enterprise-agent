@@ -33,6 +33,11 @@ class SupportStatus(StrEnum):
     UNCLEAR = "unclear"
 
 
+class ResearchExecutionMode(StrEnum):
+    SEQUENTIAL = "sequential"
+    BOUNDED_PARALLEL = "bounded_parallel"
+
+
 class ResearchEvidence(BaseModel):
     title: str
     url: str
@@ -65,17 +70,43 @@ class ResearchRequest(BaseModel):
 
 
 class ResearchQuery(ResearchContract):
+    query_id: str = ""
+    title: str = ""
     query: str
     subtopic: str
     purpose: str
+    depends_on: list[str] = Field(default_factory=list)
     language: str | None = None
     freshness_days: int | None = Field(default=None, ge=0)
     preferred_domains: list[str] = Field(default_factory=list)
 
 
+class ResearchPlanTaskDraft(ResearchContract):
+    """Untrusted, model-produced research task proposal."""
+
+    task_id: str = ""
+    title: str
+    query: str
+    purpose: str
+    depends_on: list[str] = Field(default_factory=list)
+
+
+class ResearchPlanDraft(ResearchContract):
+    """Structured plan proposal before server-owned policy compilation."""
+
+    goal: str
+    tasks: list[ResearchPlanTaskDraft] = Field(default_factory=list)
+
+
 class ResearchPlan(ResearchContract):
+    plan_id: str = ""
     version: str = "1"
     goal: str
+    as_of: datetime | None = None
+    freshness_days: int | None = Field(default=None, ge=0)
+    language: str | None = None
+    preferred_domains: list[str] = Field(default_factory=list)
+    required_source_types: list[SourceType] = Field(default_factory=list)
     subtopics: list[str] = Field(default_factory=list)
     queries: list[ResearchQuery] = Field(default_factory=list)
     acceptance_criteria: list[str] = Field(default_factory=list)
@@ -83,6 +114,11 @@ class ResearchPlan(ResearchContract):
     min_unique_domains: int = Field(default=1, ge=1)
     max_search_calls: int = Field(default=3, ge=1)
     max_fetch_calls: int = Field(default=8, ge=0)
+    max_candidate_sources: int = Field(default=30, ge=1)
+    execution_mode: ResearchExecutionMode = ResearchExecutionMode.BOUNDED_PARALLEL
+    max_concurrency: int = Field(default=3, ge=1)
+    allow_partial_results: bool = True
+    stop_policy: str = "budget_or_dependency_completion"
 
 
 class SearchCandidate(ResearchContract):
@@ -95,6 +131,7 @@ class SearchCandidate(ResearchContract):
     rank: int | None = Field(default=None, ge=1)
     domain: str
     source_type: SourceType = SourceType.UNKNOWN
+    score: float | None = Field(default=None, ge=0.0, le=1.0)
     published_at: datetime | None = None
     modified_at: datetime | None = None
     retrieved_at: datetime

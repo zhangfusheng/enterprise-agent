@@ -8,6 +8,7 @@ repository ``.env`` loaded only when that variable is unset.
 from __future__ import annotations
 
 import os
+import pprint
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -28,7 +29,6 @@ from enterprise_agent.orchestration.planning.llm_planner import (
 )
 from enterprise_agent.orchestration.planning.planner import GlobalPlanner
 from enterprise_agent.orchestration.planning.validation import validate_plan
-import pprint
 
 pytestmark = pytest.mark.skipif(
     os.environ.get("EA_REAL_TESTS", "").strip().lower() not in {"1", "true", "yes"},
@@ -46,6 +46,7 @@ def live_planner(tmp_path_factory: pytest.TempPathFactory) -> Iterator[tuple[Con
             checkpoint_url=f"sqlite:///{root}/checkpoint.sqlite",
             artifact_root=root / "artifacts",
             offline_mode=False,
+            allow_external_network=True,
         )
     )
     planner = _request_planner(container)

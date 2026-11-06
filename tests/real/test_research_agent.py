@@ -6,7 +6,7 @@ repository ``.env`` loaded only when that variable is unset.
 
 The case boots the process composition root with production settings, then
 does what the execute node does: bind a run-scoped gateway, build the
-supervisor context, and dispatch a research task. The model and DuckDuckGo
+supervisor context, and dispatch a research task. The model and Tavily
 search are the ones configured for that process.
 """
 
@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-from enterprise_agent.agents.harness.deepagents import WORKER_PROMPT_VERSION
+from enterprise_agent.agents.research.planning import PLAN_PROMPT_VERSION
 from enterprise_agent.bootstrap.container import Container
 from enterprise_agent.bootstrap.settings import Settings
 from enterprise_agent.contracts.context import ExecutionContext
@@ -33,7 +33,7 @@ from enterprise_agent.infrastructure.observability.metrics import (
 )
 from enterprise_agent.runtime.budgets import BudgetLedger
 from enterprise_agent.runtime.cancellation import CancellationToken
-from enterprise_agent.tools.web.provider import DuckDuckGoSearchProvider
+from enterprise_agent.tools.web.providers import TavilySearchProvider
 
 pytestmark = pytest.mark.skipif(
     os.environ.get("EA_REAL_TESTS", "").strip().lower() not in {"1", "true", "yes"},
@@ -52,9 +52,12 @@ def live_research(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Containe
             environment="production",
             dev_identity=False,
             offline_mode=False,
+            allow_external_network=True,
             database_url=f"sqlite:///{root}/app.sqlite",
             checkpoint_url=f"sqlite:///{root}/checkpoint.sqlite",
             artifact_root=root / "artifacts",
+            search_primary_provider="tavily",
+            search_fallback_providers="",
         )
     )
     profile = container.models.profile_for_role("research")
@@ -70,7 +73,7 @@ def live_research(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Containe
 def test_research_worker_collects_live_sources(live_research: Container) -> None:
     container = live_research
     profile = container.models.profile_for_role("research")
-    assert isinstance(container.search_provider, DuckDuckGoSearchProvider)
+    assert isinstance(container.search_provider.primary_provider, TavilySearchProvider)
     assert "web_search" in container.policy.get_role_policy("research").tools
 
     task = TaskSpec(
@@ -103,7 +106,7 @@ def test_research_worker_collects_live_sources(live_research: Container) -> None
     assert calls
     assert {call["role"] for call in calls} == {"research"}
     assert {call["model_version"] for call in calls} == {profile.model_name}
-    assert {call["prompt_version"] for call in calls} == {WORKER_PROMPT_VERSION}
+    assert {call["prompt_version"] for call in calls} == {PLAN_PROMPT_VERSION}
     assert {call["outcome"] for call in calls} == {"success"}
 
 

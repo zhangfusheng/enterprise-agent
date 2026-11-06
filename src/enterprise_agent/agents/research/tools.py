@@ -1,12 +1,13 @@
-"""Web tools the research model can call.
+"""Bounded web-call runtime used by the ResearchExecutor.
 
-The model chooses the query and the pages. Execution stays on the direct provider
-or ToolGateway so scope, budget, and cancellation do not move into the harness.
+The executor supplies every query and URL from a compiled ResearchPlan. The
+module owns per-run budgets, scope checks, deduplication, and evidence gates;
+the model does not choose ad-hoc tool calls.
 """
 
 import json
 import threading
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
@@ -136,11 +137,15 @@ class RunControl:
         self,
         policy: ResearchLoopPolicy | None = None,
         excluded_urls: list[str] | tuple[str, ...] = (),
+        *,
+        stop_when_sufficient: bool = True,
     ) -> None:
         self.policy = policy or ResearchLoopPolicy()
+        self.stop_when_sufficient = stop_when_sufficient
         self.error: BaseException | None = None
         self.stats = _LoopStats()
         self._sources: dict[str, dict[str, Any]] = {}
+        self._source_query_ids: dict[str, str] = {}
         self.errors: list[str] = []
         self._lock = threading.RLock()
         self._excluded_urls = {
@@ -185,6 +190,24 @@ class RunControl:
     def candidates(self) -> list[dict[str, Any]]:
         with self._lock:
             return list(self._sources.values())
+
+    def mark_query_sources(self, query_id: str, urls: Sequence[str]) -> None:
+        with self._lock:
+            for url in urls:
+                normalized = _normalize_url(url)
+                if normalized in self._sources:
+                    self._source_query_ids[normalized] = query_id
+
+    def order_sources(self, query_order: Mapping[str, int]) -> None:
+        with self._lock:
+            ordered = sorted(
+                self._sources.items(),
+                key=lambda item: (
+                    query_order.get(self._source_query_ids.get(item[0], ""), len(query_order)),
+                    item[0],
+                ),
+            )
+            self._sources = dict(ordered)
 
     def is_verified(self, source: Mapping[str, Any]) -> bool:
         if not self.policy.require_fetch:
@@ -309,7 +332,7 @@ class RunControl:
 
     def should_stop_after_call(self) -> bool:
         with self._lock:
-            if len(self.evidence()) >= self.policy.min_usable_sources:
+            if self.stop_when_sufficient and len(self.evidence()) >= self.policy.min_usable_sources:
                 self.stop(_EVIDENCE_SUFFICIENT)
                 return True
             if self.stats.total_tool_calls >= self.policy.max_total_tool_calls:
@@ -325,7 +348,7 @@ class RunControl:
         if calls >= limit:
             self.stop(reason)
             raise ResearchLoopStopped(reason)
-        if len(self.evidence()) >= self.policy.min_usable_sources:
+        if self.stop_when_sufficient and len(self.evidence()) >= self.policy.min_usable_sources:
             self.stop(_EVIDENCE_SUFFICIENT)
             raise ResearchLoopStopped(_EVIDENCE_SUFFICIENT)
         if kind == "search":

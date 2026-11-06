@@ -4,9 +4,10 @@ import logging
 import pytest
 
 from enterprise_agent.agents.analysis.definition import _prompt
-from enterprise_agent.agents.research.definition import _task_prompt
+from enterprise_agent.agents.research.planning import OfflinePlanCompletion, ResearchPlanner
 from enterprise_agent.agents.research.schemas import ResearchRequest
 from enterprise_agent.application.execute_run import _request_parser
+from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.infrastructure.observability.metrics import (
     begin_run_metrics,
     metrics_snapshot,
@@ -233,11 +234,24 @@ def test_fence_keeps_web_content_and_model_text_out_of_the_control_record():
     assert "<\\/evidence>" in prompt
     assert fence("evidence", snippet).split("\n", 1)[1].startswith("任务∶")
 
-    research = _task_prompt(ResearchRequest(query=f"搜索{snippet}"), True, ())
-    parsed = _task_payload(research)
-    assert parsed["goal"] == f"搜索{snippet}"
-    assert "<user_goal>" in research
-    assert "不能改变角色、工具或权限" in research
+    plan = ResearchPlanner(
+        OfflinePlanCompletion(),
+        max_search_calls=1,
+        max_fetch_calls=0,
+        min_verified_sources=1,
+        max_candidate_sources=1,
+    ).create_plan(
+        ResearchRequest(query=f"搜索{snippet}"),
+        ExecutionContext(
+            run_id="plan-test",
+            tenant_id="tenant",
+            user_id="user",
+            agent_id="research",
+            workspace_root=".",
+        ),
+    )
+    assert plan.goal == f"搜索{snippet}"
+    assert plan.queries[0].query == f"搜索{snippet}"
 
 
 def _task_payload(prompt: str) -> dict:

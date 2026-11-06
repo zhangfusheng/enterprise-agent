@@ -1,14 +1,18 @@
-from langchain_core.messages import AIMessage
-from tests.support.harness import offline_harness
-from tests.support.scripted import ScriptedChatModel, tool_call
+from datetime import UTC, datetime
 
-from enterprise_agent.agents.harness.roles import RESEARCH
 from enterprise_agent.agents.research.core import ResearchCore, merge_evidence, outcome
-from enterprise_agent.agents.research.schemas import ResearchEvidence, ResearchRequest
+from enterprise_agent.agents.research.planning import ResearchPlanner
+from enterprise_agent.agents.research.schemas import (
+    ResearchEvidence,
+    ResearchPlanDraft,
+    ResearchPlanTaskDraft,
+    ResearchRequest,
+    SearchCandidate,
+)
 from enterprise_agent.agents.research.tools import ResearchLoopPolicy
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import ResultStatus
-from enterprise_agent.tools.web.provider import SearchItem
+from enterprise_agent.tools.web.provider import SearchRequest, SearchResponse
 
 
 def _context() -> ExecutionContext:
@@ -21,72 +25,140 @@ def _context() -> ExecutionContext:
     )
 
 
+class _PlanCompletion:
+    def __init__(self, draft: ResearchPlanDraft) -> None:
+        self.draft = draft
+
+    def complete(self, messages, *, request):
+        del messages, request
+        return self.draft
+
+
 class _Search:
-    def search(self, query: str, limit: int = 5) -> list[SearchItem]:
-        return [
-            SearchItem(
-                title="source",
-                url="https://example.com/source",
-                snippet=query,
-                metadata={},
-            )
-        ][:limit]
+    name = "test"
+
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def search(self, request: SearchRequest) -> SearchResponse:
+        self.calls.append(request.query)
+        return SearchResponse(
+            provider=self.name,
+            results=(
+                SearchCandidate(
+                    candidate_id=f"candidate-{len(self.calls)}",
+                    title="source",
+                    url=f"https://example.com/{len(self.calls)}",
+                    snippet=request.query,
+                    provider=self.name,
+                    rank=1,
+                    domain="example.com",
+                    retrieved_at=datetime(2026, 1, 1, tzinfo=UTC),
+                ),
+            ),
+        )
 
 
-def _core(*steps: AIMessage) -> ResearchCore:
-    harness = offline_harness(RESEARCH)
-    model = ScriptedChatModel(steps=list(steps))
-    harness.models.chat_model_for_role = lambda role, model=model: model
+def _core(provider: _Search, draft: ResearchPlanDraft) -> ResearchCore:
+    planner = ResearchPlanner(
+        _PlanCompletion(draft),
+        max_search_calls=3,
+        max_fetch_calls=0,
+        min_verified_sources=1,
+        max_candidate_sources=3,
+    )
     return ResearchCore(
-        _Search(),
-        harness=harness,
-        loop_policy=ResearchLoopPolicy(require_fetch=False),
+        provider,
+        planner=planner,
+        loop_policy=ResearchLoopPolicy(require_fetch=False, min_usable_sources=1),
     )
 
 
-def test_core_runs_without_research_agent_adapter():
-    core = _core(
-        tool_call("web_search", {"query": "幂等性", "limit": 3}, "search-1"),
-        AIMessage(content="已完成研究"),
+def test_core_generates_plan_before_search_and_executes_only_planned_queries():
+    provider = _Search()
+    draft = ResearchPlanDraft(
+        goal="研究幂等性",
+        tasks=[
+            ResearchPlanTaskDraft(
+                task_id="a",
+                title="定义",
+                query="幂等性定义",
+                purpose="获取定义",
+            ),
+            ResearchPlanTaskDraft(
+                task_id="b",
+                title="实践",
+                query="幂等性实践",
+                purpose="获取实践",
+            ),
+        ],
     )
 
-    result = core.run(ResearchRequest(query="幂等性", limit=3), _context())
+    result = _core(provider, draft).run(ResearchRequest(query="研究幂等性"), _context())
 
     assert result.status == ResultStatus.SUCCESS
-    assert result.summary == "收集到 1 条来源。"
-    assert result.sources[0]["url"] == "https://example.com/source"
-    assert result.agent_id == "agent_research"
+    assert sorted(provider.calls) == ["幂等性定义", "幂等性实践"]
+    assert result.structured_data["plan"]["queries"][0]["query_id"] == "query-1"
+    assert result.structured_data["research"]["planned_query_count"] == 2
 
 
-def test_core_merges_historical_evidence_and_exposes_research_metadata():
-    core = _core(
-        tool_call("web_search", {"query": "新来源", "limit": 3}, "search-1"),
-        AIMessage(content="已完成研究"),
+def test_core_rejects_invalid_plan_without_calling_provider():
+    provider = _Search()
+    draft = ResearchPlanDraft(
+        goal="研究",
+        tasks=[
+            ResearchPlanTaskDraft(
+                task_id="a",
+                title="循环",
+                query="循环",
+                purpose="验证循环",
+                depends_on=["b"],
+            ),
+            ResearchPlanTaskDraft(
+                task_id="b",
+                title="循环二",
+                query="循环二",
+                purpose="验证循环",
+                depends_on=["a"],
+            ),
+        ],
     )
-    historical = ResearchEvidence(
-        title="历史来源",
-        url="https://example.com/old",
-        snippet="历史证据",
+
+    result = _core(provider, draft).run(ResearchRequest(query="研究"), _context())
+
+    assert result.status == ResultStatus.FAILED
+    assert provider.calls == []
+    assert result.structured_data["research"]["plan_status"] == "failed"
+
+
+def test_dependent_queries_are_executed_in_dependency_order():
+    provider = _Search()
+    draft = ResearchPlanDraft(
+        goal="研究依赖",
+        tasks=[
+            ResearchPlanTaskDraft(
+                task_id="first",
+                title="第一步",
+                query="第一步查询",
+                purpose="先收集基础信息",
+            ),
+            ResearchPlanTaskDraft(
+                task_id="second",
+                title="第二步",
+                query="第二步查询",
+                purpose="在基础信息之后继续研究",
+                depends_on=["first"],
+            ),
+        ],
     )
 
-    result = core.run(
-        ResearchRequest(
-            query="新来源",
-            historical_evidence=[historical],
-            excluded_urls=[historical.url],
-        ),
-        _context(),
-    )
+    result = _core(provider, draft).run(ResearchRequest(query="研究依赖"), _context())
 
-    assert [item["url"] for item in result.sources] == [
-        "https://example.com/old",
-        "https://example.com/source",
-    ]
-    assert result.structured_data["research"]["historical_evidence_count"] == 1
-    assert result.structured_data["research"]["new_evidence_count"] == 1
+    assert result.status == ResultStatus.SUCCESS
+    assert provider.calls == ["第一步查询", "第二步查询"]
 
 
-def test_core_semantics_are_independent_of_agent_orchestration():
+def test_core_merges_historical_evidence_and_deduplicates_urls():
     historical = [ResearchEvidence(title="old", url="https://example.com/a")]
     merged = merge_evidence(
         historical,
@@ -101,4 +173,4 @@ def test_core_semantics_are_independent_of_agent_orchestration():
         "https://example.com/b",
     ]
     assert outcome([], []) == ResultStatus.FAILED
-    assert outcome(merged, ["fetch failed"]) == ResultStatus.PARTIAL
+    assert outcome(merged, ["partial failure"]) == ResultStatus.PARTIAL

@@ -24,8 +24,17 @@ from enterprise_agent.agents.harness.deepagents import WORKER_PROMPT_VERSION, De
 from enterprise_agent.agents.harness.registry import HarnessRoleRegistry
 from enterprise_agent.agents.harness.roles import ANALYSIS, RESEARCH
 from enterprise_agent.agents.research.definition import ResearchAgent
+from enterprise_agent.agents.research.planning import (
+    PLAN_PROMPT_VERSION as RESEARCH_PLAN_PROMPT_VERSION,
+)
+from enterprise_agent.agents.research.planning import (
+    OfflinePlanCompletion,
+    ResearchPlanner,
+    StructuredPlanCompletion,
+)
 from enterprise_agent.agents.research.tools import ResearchLoopPolicy
 from enterprise_agent.application.research import ResearchApplication
+from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.governance.authorization import AuthorizationPolicy, RolePolicy
 from enterprise_agent.governance.budgets import BudgetLimits
 from enterprise_agent.governance.delegation import DelegationGuard
@@ -47,7 +56,7 @@ from enterprise_agent.orchestration.execution.workers import (
     WorkerRegistry,
 )
 from enterprise_agent.orchestration.planning.llm_planner import (
-    PROMPT_VERSION as PLAN_PROMPT_VERSION,
+    PROMPT_VERSION as ORCHESTRATION_PLAN_PROMPT_VERSION,
 )
 from enterprise_agent.orchestration.routing.llm_parser import PROMPT_VERSION as GOAL_PROMPT_VERSION
 from enterprise_agent.runtime.budgets import BudgetLedger
@@ -136,13 +145,23 @@ class Container:
         self.report_store = ReportStore(self.settings.artifact_root)
         self.search_provider = _build_search_provider(self.settings)
         self.harness = DeepAgentsHarness(self.models, _harness_roles(), traces=self.traces)
+        self.research_planner = ResearchPlanner(
+            lambda context: _research_plan_completion(self.models, self.settings, context),
+            max_search_calls=self.settings.research_max_search_calls,
+            max_fetch_calls=self.settings.research_max_fetch_calls,
+            max_candidate_sources=self.settings.research_max_candidate_sources,
+            min_verified_sources=self.settings.research_min_usable_sources,
+            max_concurrency=self.settings.research_plan_max_concurrency,
+            repair_attempts=self.settings.research_plan_repair_attempts,
+            allow_partial_results=self.settings.research_plan_allow_partial_results,
+        )
         self.budget_limits = _budget_limits(self.settings)
         self.tools = self._build_tools()
         _assert_runtime_contract(self.policy, self.tools, self.models, self.harness.roles.roles())
         self.tool_gateway = self.open_gateway()
         self.research = ResearchAgent(
             self.search_provider,
-            harness=self.harness,
+            planner=self.research_planner,
             gateway=self.tool_gateway,
             loop_policy=ResearchLoopPolicy(
                 max_search_calls=self.settings.research_max_search_calls,
@@ -231,6 +250,18 @@ class Container:
                     if self.settings.allow_external_network
                     else "disabled"
                 ),
+                "search": {
+                    "primary_provider": self.settings.search_primary_provider,
+                    "fallback_providers": self.settings.search_fallback_provider_names,
+                    "active_providers": self.search_provider.provider_names,
+                    "doubao_max_query_chars": self.settings.doubao_search_max_query_chars,
+                },
+                "research_plan": {
+                    "max_search_calls": self.settings.research_max_search_calls,
+                    "max_fetch_calls": self.settings.research_max_fetch_calls,
+                    "max_concurrency": self.settings.research_plan_max_concurrency,
+                    "repair_attempts": self.settings.research_plan_repair_attempts,
+                },
                 "max_replans": self.settings.max_replans,
                 "max_tasks": self.settings.max_tasks,
                 "max_agent_depth": self.settings.max_agent_depth,
@@ -243,7 +274,8 @@ class Container:
                 "policy": self.policy_version,
                 "orchestration": self.orchestration_version,
                 "goal_prompt": GOAL_PROMPT_VERSION,
-                "plan_prompt": PLAN_PROMPT_VERSION,
+                "plan_prompt": ORCHESTRATION_PLAN_PROMPT_VERSION,
+                "research_plan_prompt": RESEARCH_PLAN_PROMPT_VERSION,
                 "worker_prompt": WORKER_PROMPT_VERSION,
             },
         }
@@ -403,6 +435,27 @@ def _budget_limits(settings: Settings) -> BudgetLimits:
         agents=settings.max_agents,
         steps=settings.max_steps,
         runtime_seconds=settings.max_runtime_seconds,
+    )
+
+
+def _research_plan_completion(
+    models: ModelRegistry,
+    settings: Settings,
+    context: ExecutionContext,
+):
+    if settings.offline_mode:
+        return OfflinePlanCompletion()
+    model_profile = context.metadata.get("model_profile")
+    reasoning_effort = context.metadata.get("reasoning_effort")
+    profile = model_profile if isinstance(model_profile, str) and model_profile else None
+    effort = reasoning_effort if isinstance(reasoning_effort, str) and reasoning_effort else None
+    model = models.chat_model_for_role("research", profile, reasoning_effort=effort)
+    model_config = models.profile_for_role("research", profile)
+    return StructuredPlanCompletion(
+        model,
+        model_version=model_config.model_name,
+        prices=model_config.parameters,
+        offline=model_config.provider == "offline",
     )
 
 

@@ -12,6 +12,7 @@ from typing import Any, Literal
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
+from enterprise_agent.agents.analysis.claims import ClaimSubmissionControl
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.runtime.budgets import BudgetExceeded
 from enterprise_agent.runtime.cancellation import CancellationRequested
@@ -25,6 +26,7 @@ _CALCULATE = "calculate"
 _SAVE = "save_report"
 _VALUES_REJECTED = "数值不在证据中"
 _STORE_UNAVAILABLE = "报告存储不可用"
+_CLAIMS_REQUIRED = "保存报告前必须提交经过校验的分析声明"
 _FAILED = ToolStatus.FAILED.value
 _SUCCESS = ToolStatus.SUCCESS.value
 
@@ -61,6 +63,8 @@ def bind_analysis_tools(
     gateway: ToolGateway | None,
     context: ExecutionContext,
     control: RunControl,
+    require_valid_claims: bool = False,
+    claims_control: ClaimSubmissionControl | None = None,
 ) -> list[StructuredTool]:
     series = [tuple(item["values"]) for item in evidence if "values" in item]
 
@@ -68,6 +72,10 @@ def bind_analysis_tools(
         return _calculate(operation, values, series, gateway, context, control)
 
     def save_report(markdown: str) -> str:
+        if require_valid_claims and (
+            claims_control is None or not claims_control.accepted
+        ):
+            return _fail(_CLAIMS_REQUIRED)
         return _save(markdown, reports, gateway, context, control)
 
     return [

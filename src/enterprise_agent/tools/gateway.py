@@ -33,14 +33,15 @@ class ToolGateway:
         if request.name not in context.allowed_tools:
             raise ToolDenied(f"tool {request.name} is not in the execution scope")
         if request.name in {"web_search", "web_fetch"}:
-            if context.metadata.get("external_network_allowed") is not True:
+            offline_fixture_fetch = (
+                request.name == "web_fetch"
+                and context.metadata.get("network_mode") == "offline_fixture"
+            )
+            if context.metadata.get("external_network_allowed") is not True and not offline_fixture_fetch:
                 raise ToolDenied(
                     f"external network access is not enabled for tool {request.name}"
                 )
-            if (
-                request.name == "web_fetch"
-                and context.metadata.get("network_mode") in {"offline_fixture", "disabled"}
-            ):
+            if request.name == "web_fetch" and context.metadata.get("network_mode") == "disabled":
                 raise ToolDenied("web_fetch is unavailable outside external network mode")
         if not registered.spec.required_scopes.issubset(context.metadata.get("scopes", set())):
             raise ToolDenied(f"missing scopes for tool {request.name}")

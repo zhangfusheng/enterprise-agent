@@ -97,7 +97,10 @@ class ResearchExecutor:
         if (
             self.allow_fetch
             and fetch_tool is not None
-            and control.policy.require_fetch
+            and (
+                control.policy.require_fetch
+                or context.metadata.get("network_mode") == "offline_fixture"
+            )
             and control.candidates()
         ):
             self._execute_fetches(fetch_tool, control)

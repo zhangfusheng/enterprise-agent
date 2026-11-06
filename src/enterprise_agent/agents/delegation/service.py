@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from enterprise_agent.agents.analysis.definition import AnalysisAgent
-from enterprise_agent.agents.analysis.schemas import AnalysisRequest
+from enterprise_agent.agents.analysis.schemas import AnalysisRequest, ResearchEvidenceBundle
 from enterprise_agent.agents.delegation.context import child_context
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.delegations import DelegationRecord, DelegationStatus
@@ -15,7 +15,15 @@ class DelegationService:
         self.analysis_agent = analysis_agent
         self.records: list[DelegationRecord] = []
 
-    def delegate_analysis(self, parent: ExecutionContext, objective: str, evidence: list[dict], agent_count: int) -> AgentResult:
+    def delegate_analysis(
+        self,
+        parent: ExecutionContext,
+        objective: str,
+        evidence: list[dict],
+        agent_count: int,
+        *,
+        research_evidence: ResearchEvidenceBundle | None = None,
+    ) -> AgentResult:
         self.guard.check(parent, "analysis", agent_count)
         delegation_id = f"delegation_{uuid4().hex[:16]}"
         agent_id = f"agent_{uuid4().hex[:16]}"
@@ -32,7 +40,12 @@ class DelegationService:
         self.records.append(record)
         try:
             result = self.analysis_agent.run(
-                AnalysisRequest(objective=objective, evidence=evidence), child
+                AnalysisRequest(
+                    objective=objective,
+                    evidence=evidence,
+                    research_evidence=research_evidence,
+                ),
+                child,
             )
             self.records[-1] = record.model_copy(update={"status": DelegationStatus.SUCCEEDED, "result_summary": result.summary})
             return result

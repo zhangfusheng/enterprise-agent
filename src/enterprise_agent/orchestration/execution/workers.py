@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from typing import Protocol
 
 from enterprise_agent.agents.analysis.definition import AnalysisAgent
-from enterprise_agent.agents.analysis.schemas import AnalysisRequest
+from enterprise_agent.agents.analysis.schemas import AnalysisRequest, ResearchEvidenceBundle
 from enterprise_agent.agents.delegation.service import DelegationService
 from enterprise_agent.agents.research.definition import ResearchAgent
 from enterprise_agent.agents.research.schemas import ResearchEvidence, ResearchRequest
@@ -166,7 +166,8 @@ class AnalysisWorker:
         delegate: bool,
         agent_count: int,
     ) -> AgentResult:
-        evidence = _evidence(task, results)
+        research_evidence = _research_bundle(task, results)
+        evidence = research_evidence.sources if research_evidence is not None else _evidence(task, results)
         scoped = _role_context(context, self.role, task.task_id)
         if delegate:
             return self._delegation.delegate_analysis(
@@ -174,9 +175,14 @@ class AnalysisWorker:
                 task.task_description,
                 evidence,
                 agent_count,
+                research_evidence=research_evidence,
             )
         return self._agent.run(
-            AnalysisRequest(objective=task.task_description, evidence=evidence),
+            AnalysisRequest(
+                objective=task.task_description,
+                evidence=evidence,
+                research_evidence=research_evidence,
+            ),
             scoped,
         )
 
@@ -198,6 +204,79 @@ def _evidence(task: TaskSpec, results: Mapping[str, AgentResult]) -> list[dict]:
             continue
         evidence.extend(result.structured_data.get("evidence", []))
     return evidence
+
+
+def _research_bundle(
+    task: TaskSpec,
+    results: Mapping[str, AgentResult],
+) -> ResearchEvidenceBundle | None:
+    """Build one structured Research→Analysis context from task dependencies."""
+
+    if not task.depends_on:
+        return None
+    sources: list[dict] = []
+    assessments: list[dict] = []
+    unresolved: list[str] = []
+    seen_sources: set[str] = set()
+    seen_assessments: set[str] = set()
+    query = ""
+    plan: dict | None = None
+    index_snapshot: dict = {}
+    found_research_result = False
+    for dependency in task.depends_on:
+        result = results.get(dependency)
+        if result is None:
+            continue
+        metadata = result.structured_data.get("research")
+        structured_evidence = result.structured_data.get("evidence")
+        if isinstance(metadata, Mapping) or result.sources or isinstance(structured_evidence, list):
+            found_research_result = True
+        if not query and isinstance(result.structured_data.get("query"), str):
+            query = result.structured_data["query"]
+        if plan is None and isinstance(result.structured_data.get("plan"), Mapping):
+            plan = dict(result.structured_data["plan"])
+        if isinstance(metadata, Mapping):
+            raw_assessments = metadata.get("source_assessments")
+            if isinstance(raw_assessments, list):
+                for item in raw_assessments:
+                    if not isinstance(item, Mapping):
+                        continue
+                    candidate_id = item.get("candidate_id")
+                    key = str(candidate_id) if candidate_id is not None else repr(sorted(item.items()))
+                    if key not in seen_assessments:
+                        seen_assessments.add(key)
+                        assessments.append(dict(item))
+            raw_index = metadata.get("evidence_index")
+            if isinstance(raw_index, Mapping) and not index_snapshot:
+                index_snapshot = dict(raw_index)
+        raw_sources = [*result.sources]
+        if isinstance(structured_evidence, list):
+            raw_sources.extend(structured_evidence)
+        for item in raw_sources:
+            if not isinstance(item, Mapping):
+                continue
+            source = dict(item)
+            url = source.get("url")
+            if not isinstance(url, str) or not url.strip():
+                continue
+            key = source.get("document_id") or url.strip().casefold().rstrip("/")
+            if str(key) in seen_sources:
+                continue
+            seen_sources.add(str(key))
+            sources.append(source)
+        raw_unresolved = result.structured_data.get("unresolved_questions")
+        if isinstance(raw_unresolved, list):
+            unresolved.extend(item for item in raw_unresolved if isinstance(item, str))
+    if not found_research_result:
+        return None
+    return ResearchEvidenceBundle(
+        query=query or task.task_description,
+        sources=sources,
+        plan=plan,
+        source_assessments=assessments,
+        evidence_index=index_snapshot,
+        unresolved_questions=list(dict.fromkeys(unresolved)),
+    )
 
 
 def _historical_evidence(result: AgentResult | None) -> list[ResearchEvidence]:

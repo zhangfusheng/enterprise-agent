@@ -78,7 +78,7 @@ def _respond(
             {
                 "name": name,
                 "args": payload,
-                "id": "offline-call-1",
+                "id": f"offline-call-{sum(getattr(message, 'type', None) == 'ai' for message in messages) + 1}",
                 "type": "tool_call",
             }
         ],
@@ -92,13 +92,18 @@ def _selected_tool(
 ) -> dict[str, Any] | None:
     if not tools:
         return None
-    if messages and getattr(messages[-1], "type", None) == "tool":
-        return None
     names = [_tool_name(tool) for tool in tools]
+    if messages and getattr(messages[-1], "type", None) == "tool":
+        last_name = str(getattr(messages[-1], "name", "") or "")
+        if last_name == "submit_claims" and "save_report" in names:
+            return tools[names.index("save_report")]
+        return None
+    text = _last_user_text(messages)
+    if "submit_claims" in names and "这是研究结果分析" in text:
+        return tools[names.index("submit_claims")]
     if tool_choice in _FIRST_TOOL_CHOICES or tool_choice is True:
         return tools[0]
     if tool_choice in (None, "auto", "none", False):
-        text = _last_user_text(messages)
         if "web_search" in names and any(
             marker in text for marker in ("搜索", "网页", "来源", "最新", "实时")
         ):

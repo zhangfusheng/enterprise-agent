@@ -75,7 +75,7 @@ from enterprise_agent.tools.web.provider import (
 )
 from enterprise_agent.tools.web.providers import DoubaoSearchProvider, TavilySearchProvider
 from enterprise_agent.tools.web.search import web_search
-from enterprise_agent.tools.web.testing import FixtureSearchProvider
+from enterprise_agent.tools.web.testing import FixtureSearchProvider, FixtureWebFetcher
 from enterprise_agent.tools.workspace import Workspace, WorkspaceDenied
 
 from .settings import Settings, get_settings
@@ -175,9 +175,8 @@ class Container:
                 min_usable_sources=self.settings.research_min_usable_sources,
                 max_candidate_sources=self.settings.research_max_candidate_sources,
                 min_content_length=self.settings.research_min_content_length,
-                # Offline search uses local fixture candidates without a real
-                # page transport. Online/production runs keep the strict
-                # body-verification gate enabled.
+                # Offline search uses a local fixture fetcher, but keeps the
+                # historical relaxed source-count policy for small fixtures.
                 require_fetch=(
                     self.settings.research_require_fetch
                     and not self.settings.offline_mode
@@ -446,6 +445,8 @@ def _build_search_provider(settings: Settings) -> SearchProviderRouter:
 
 
 def _build_web_fetcher(settings: Settings) -> WebFetcher:
+    if settings.offline_mode:
+        return FixtureWebFetcher()
     timeout = httpx.Timeout(
         connect=settings.web_fetch_connect_timeout_seconds,
         read=settings.web_fetch_read_timeout_seconds,

@@ -10,7 +10,18 @@ from enterprise_agent.agents.research.planning import (
     ResearchPlanner,
     ResearchPlanningError,
 )
-from enterprise_agent.agents.research.schemas import ResearchEvidence, ResearchRequest
+from enterprise_agent.agents.research.ranking import (
+    RANKING_VERSION,
+    deduplicate_sources,
+    evidence_is_eligible,
+    normalize_source_url,
+    rank_sources,
+)
+from enterprise_agent.agents.research.schemas import (
+    FreshnessStatus,
+    ResearchEvidence,
+    ResearchRequest,
+)
 from enterprise_agent.agents.research.tools import ResearchLoopPolicy, RunControl
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import AgentResult, ResultStatus
@@ -142,20 +153,40 @@ class ResearchCore:
         errors: list[str],
         control: RunControl,
     ) -> AgentResult:
+        effective_as_of = request.as_of or control.effective_as_of
+        ranked = rank_sources(
+            merge_evidence(request.historical_evidence, evidence),
+            preferred_domains=plan.preferred_domains,
+            required_source_types=plan.required_source_types,
+            freshness_days=plan.freshness_days,
+            as_of=effective_as_of,
+            min_content_length=control.policy.min_content_length,
+        )
+        verified_ranked = [item for item in ranked if control.is_verified(item.source)]
         merged = [
-            item
-            for item in merge_evidence(request.historical_evidence, evidence)
-            if control.is_verified(item)
+            item.source
+            for item in verified_ranked
+            if evidence_is_eligible(
+                item.assessment,
+                freshness_required=request.freshness_days is not None,
+            )
         ]
+        fresh_count = sum(
+            item.assessment.freshness_status.value == "fresh" for item in verified_ranked
+        )
+        required_count = (
+            fresh_count if request.freshness_days is not None else len(merged)
+        )
         collected_errors = list(errors)
         if not merged and control.policy.require_fetch:
             if _NO_VERIFIED_RESULTS not in collected_errors:
                 collected_errors.append(_NO_VERIFIED_RESULTS)
-        elif control.policy.require_fetch and len(merged) < control.policy.min_usable_sources:
+        elif control.policy.require_fetch and required_count < control.policy.min_usable_sources:
             collected_errors.append(
                 f"{_INSUFFICIENT_VERIFIED_RESULTS}: "
-                f"{len(merged)}/{control.policy.min_usable_sources}"
+                f"{required_count}/{control.policy.min_usable_sources}"
             )
+        merged_assessments = [item.assessment for item in verified_ranked]
         return AgentResult(
             status=outcome(merged, collected_errors),
             summary=(
@@ -171,7 +202,13 @@ class ResearchCore:
                 "query": request.query,
                 "evidence": merged,
                 "plan": plan.model_dump(mode="json"),
-                "research": research_metadata(request, plan, control, merged),
+                "research": research_metadata(
+                    request,
+                    plan,
+                    control,
+                    merged,
+                    assessments=merged_assessments,
+                ),
             },
             sources=merged,
             unmet_requirements=(
@@ -180,7 +217,7 @@ class ResearchCore:
                     merged
                     and (
                         not control.policy.require_fetch
-                        or len(merged) >= control.policy.min_usable_sources
+                        or required_count >= control.policy.min_usable_sources
                     )
                 )
                 else [_NO_VERIFIED_RESULTS]
@@ -203,18 +240,18 @@ def merge_evidence(
     historical: list[ResearchEvidence],
     current: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    merged: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for item in [*(evidence.model_dump(mode="json") for evidence in historical), *current]:
-        url = item.get("url")
-        if not isinstance(url, str) or not url.strip():
-            continue
-        key = url_key(url)
-        if key in seen:
-            continue
-        seen.add(key)
-        merged.append(dict(item))
-    return merged
+    candidates = [
+        *(evidence.model_dump(mode="json") for evidence in historical),
+        *(dict(item) for item in current),
+    ]
+    candidates = [
+        item
+        for item in candidates
+        if isinstance(item.get("url"), str) and item["url"].strip()
+    ]
+    return list(
+        deduplicate_sources(candidates, min_content_length=1).sources
+    )
 
 
 def research_metadata(
@@ -222,9 +259,15 @@ def research_metadata(
     plan: Any,
     control: RunControl,
     evidence: list[dict[str, Any]],
+    *,
+    assessments: list[Any] | None = None,
 ) -> dict[str, Any]:
     metadata = control.snapshot()
     historical_urls = {url_key(item.url) for item in request.historical_evidence}
+    normalized_assessments = [
+        item.model_dump(mode="json") if hasattr(item, "model_dump") else dict(item)
+        for item in (assessments if assessments is not None else control.assessments())
+    ]
     metadata.update(
         {
             "plan_status": "compiled",
@@ -238,13 +281,24 @@ def research_metadata(
                 for item in evidence
                 if url_key(str(item.get("url", ""))) not in historical_urls
             ),
+            "ranking_version": RANKING_VERSION,
+            "source_assessments": normalized_assessments,
+            "duplicate_sources": control.duplicate_sources(),
+            "freshness_counts": _assessment_freshness_counts(normalized_assessments),
         }
     )
     return metadata
 
 
 def url_key(value: str) -> str:
-    return value.strip().casefold().rstrip("/")
+    return normalize_source_url(value)
+
+
+def _assessment_freshness_counts(assessments: list[dict[str, Any]]) -> dict[str, int]:
+    return {
+        status.value: sum(item.get("freshness_status") == status.value for item in assessments)
+        for status in FreshnessStatus
+    }
 
 
 __all__ = [

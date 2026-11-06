@@ -33,6 +33,14 @@ class SupportStatus(StrEnum):
     UNCLEAR = "unclear"
 
 
+class FreshnessStatus(StrEnum):
+    FRESH = "fresh"
+    STALE = "stale"
+    UNKNOWN = "unknown"
+    FUTURE = "future"
+    INVALID = "invalid"
+
+
 class ResearchExecutionMode(StrEnum):
     SEQUENTIAL = "sequential"
     BOUNDED_PARALLEL = "bounded_parallel"
@@ -150,6 +158,22 @@ class SearchCandidate(ResearchContract):
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
             raise ValueError("source URL must be an http(s) URL")
         return value
+
+
+class SourceAssessment(ResearchContract):
+    """Deterministic quality and ranking decision for one source."""
+
+    candidate_id: str
+    dedup_key: str
+    freshness_status: FreshnessStatus
+    effective_at: datetime | None = None
+    age_days: float | None = Field(default=None, ge=0.0)
+    rank_score: float = Field(ge=0.0, le=1.0)
+    score_breakdown: dict[str, float] = Field(default_factory=dict)
+    duplicate_of: str | None = None
+    exclusion_reason: str | None = None
+    query_ids: list[str] = Field(default_factory=list)
+    alternate_urls: list[str] = Field(default_factory=list)
 
 
 class PageDocument(ResearchContract):

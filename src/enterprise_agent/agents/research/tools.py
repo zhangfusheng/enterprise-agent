@@ -5,17 +5,25 @@ module owns per-run budgets, scope checks, deduplication, and evidence gates;
 the model does not choose ad-hoc tool calls.
 """
 
+import hashlib
 import json
 import threading
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
-from urllib.parse import urlsplit, urlunsplit
 
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
-from enterprise_agent.agents.research.schemas import PageDocument
+from enterprise_agent.agents.research.ranking import (
+    RANKING_VERSION,
+    deduplicate_sources,
+    freshness_counts,
+    normalize_source_url,
+    rank_sources,
+)
+from enterprise_agent.agents.research.schemas import PageDocument, SourceAssessment, SourceType
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.runtime.budgets import BudgetExceeded
 from enterprise_agent.runtime.cancellation import CancellationRequested
@@ -146,7 +154,11 @@ class RunControl:
         self.error: BaseException | None = None
         self.stats = _LoopStats()
         self._sources: dict[str, dict[str, Any]] = {}
-        self._source_query_ids: dict[str, str] = {}
+        self._source_index: dict[str, str] = {}
+        self._assessments: list[SourceAssessment] = []
+        self._duplicate_sources: list[dict[str, Any]] = []
+        self._ranking_version = RANKING_VERSION
+        self._effective_as_of: datetime | None = None
         self.errors: list[str] = []
         self._lock = threading.RLock()
         self._excluded_urls = {
@@ -176,6 +188,20 @@ class RunControl:
             snapshot = self.stats.snapshot(self.policy, len(self._excluded_urls))
             snapshot["candidate_source_count"] = len(self._sources)
             snapshot["verified_source_count"] = len(self.evidence())
+            snapshot["unique_source_count"] = len(self._sources)
+            snapshot["duplicate_source_count"] = max(
+                len(self._duplicate_sources),
+                sum(
+                    int(source.get("duplicate_count", 0))
+                    for source in self._sources.values()
+                    if isinstance(source.get("duplicate_count"), int)
+                ),
+            )
+            snapshot["ranking_version"] = self._ranking_version
+            snapshot["effective_as_of"] = (
+                self._effective_as_of.isoformat() if self._effective_as_of is not None else None
+            )
+            snapshot["freshness_counts"] = freshness_counts(self._assessments)
             return snapshot
 
     def evidence(self) -> list[dict[str, Any]]:
@@ -192,23 +218,80 @@ class RunControl:
         with self._lock:
             return list(self._sources.values())
 
+    def assessments(self) -> list[dict[str, Any]]:
+        with self._lock:
+            return [item.model_dump(mode="json") for item in self._assessments]
+
+    def duplicate_sources(self) -> list[dict[str, Any]]:
+        with self._lock:
+            return [dict(item) for item in self._duplicate_sources]
+
+    @property
+    def effective_as_of(self) -> datetime | None:
+        with self._lock:
+            return self._effective_as_of
+
+    def rank_candidates(
+        self,
+        *,
+        preferred_domains: Sequence[str] = (),
+        required_source_types: Sequence[SourceType | str] = (),
+        freshness_days: int | None = None,
+        as_of: datetime | None = None,
+    ) -> None:
+        """Deduplicate current sources and assign deterministic ranking metadata."""
+
+        with self._lock:
+            deduplicated = deduplicate_sources(
+                list(self._sources.values()),
+                preferred_domains=preferred_domains,
+                required_source_types=required_source_types,
+                min_content_length=self.policy.min_content_length,
+            )
+            self._duplicate_sources.extend(deduplicated.duplicates)
+            ranked = rank_sources(
+                deduplicated.sources,
+                preferred_domains=preferred_domains,
+                required_source_types=required_source_types,
+                freshness_days=freshness_days,
+                as_of=as_of,
+                min_content_length=self.policy.min_content_length,
+            )
+            self._sources = {
+                str(item.source["candidate_id"]): item.source
+                for item in ranked
+            }
+            self._rebuild_source_index()
+            self._assessments = [item.assessment for item in ranked]
+            self._effective_as_of = as_of
+
     def mark_query_sources(self, query_id: str, urls: Sequence[str]) -> None:
         with self._lock:
             for url in urls:
-                normalized = _normalize_url(url)
-                if normalized in self._sources:
-                    self._source_query_ids[normalized] = query_id
+                key = self._source_index.get(normalize_source_url(url))
+                if key is None:
+                    continue
+                query_ids = self._sources[key].setdefault("query_ids", [])
+                if query_id not in query_ids:
+                    query_ids.append(query_id)
 
     def order_sources(self, query_order: Mapping[str, int]) -> None:
         with self._lock:
             ordered = sorted(
                 self._sources.items(),
                 key=lambda item: (
-                    query_order.get(self._source_query_ids.get(item[0], ""), len(query_order)),
-                    item[0],
+                    min(
+                        (
+                            query_order.get(query_id, len(query_order))
+                            for query_id in item[1].get("query_ids", [])
+                        ),
+                        default=len(query_order),
+                    ),
+                    str(item[1].get("candidate_id", item[0])),
                 ),
             )
             self._sources = dict(ordered)
+            self._rebuild_source_index()
 
     def is_verified(self, source: Mapping[str, Any]) -> bool:
         if not self.policy.require_fetch:
@@ -294,14 +377,28 @@ class RunControl:
                     self.errors.append(f"search item {index} has an invalid snippet")
                     self.stats.rejected_source_count += 1
                     continue
-                normalized = _normalize_url(url)
-                if normalized in self._sources:
+                normalized = normalize_source_url(url)
+                existing_key = self._source_index.get(normalized)
+                if existing_key is not None:
+                    existing = self._sources[existing_key]
+                    _merge_search_metadata(existing, item)
+                    accepted.append(existing)
                     continue
                 if len(self._sources) >= self.policy.max_candidate_sources:
                     self.stats.rejected_source_count += 1
                     continue
-                source = {**dict(item), "snippet": snippet, "content": None}
-                self._sources[normalized] = source
+                source = {
+                    **dict(item),
+                    "candidate_id": _candidate_id(item, url),
+                    "snippet": snippet,
+                    "content": None,
+                    "query_ids": [],
+                    "provider_hits": _provider_hits(item),
+                    "alternate_urls": [],
+                    "duplicate_count": 0,
+                }
+                self._sources[source["candidate_id"]] = source
+                self._source_index[normalized] = source["candidate_id"]
                 accepted.append(source)
         return accepted
 
@@ -323,7 +420,8 @@ class RunControl:
             ):
                 self.errors.append(f"fetch failed for {url}: content did not pass quality gate")
                 return False
-            source = self._sources.get(_normalize_url(url))
+            source_key = self._source_index.get(normalize_source_url(url))
+            source = self._sources.get(source_key) if source_key is not None else None
             if source is None:
                 self.stats.rejected_source_count += 1
                 self.errors.append(f"fetch failed for {url}: source was not a search candidate")
@@ -347,6 +445,7 @@ class RunControl:
                 source["published_at"] = document_data["published_at"]
             if document.modified_at is not None:
                 source["modified_at"] = document_data["modified_at"]
+            self._rebuild_source_index()
             return True
 
     def reject_source(self, url: str, reason: str) -> None:
@@ -381,6 +480,14 @@ class RunControl:
         else:
             self.stats.fetch_calls += 1
         self.stats.total_tool_calls += 1
+
+    def _rebuild_source_index(self) -> None:
+        self._source_index = {}
+        for key, source in self._sources.items():
+            for source_field in ("url", "canonical_url", "final_url"):
+                value = source.get(source_field)
+                if isinstance(value, str) and value.strip():
+                    self._source_index[normalize_source_url(value)] = key
 
 class _SearchArgs(BaseModel):
     query: str = Field(description="Search query chosen for the task goal")
@@ -538,12 +645,47 @@ def _normalize_query(value: str) -> str:
 
 
 def _normalize_url(value: str) -> str:
-    raw = value.strip()
-    if not raw:
-        return raw
-    parsed = urlsplit(raw)
-    path = parsed.path.rstrip("/") or "/"
-    return urlunsplit((parsed.scheme.casefold(), parsed.netloc.casefold(), path, parsed.query, ""))
+    return normalize_source_url(value)
+
+
+def _candidate_id(item: Mapping[str, Any], url: str) -> str:
+    value = item.get("candidate_id")
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return f"candidate-{hashlib.sha256(normalize_source_url(url).encode()).hexdigest()[:16]}"
+
+
+def _provider_hits(item: Mapping[str, Any]) -> list[str]:
+    provider = item.get("provider")
+    return [provider.strip()] if isinstance(provider, str) and provider.strip() else []
+
+
+def _merge_search_metadata(existing: dict[str, Any], incoming: Mapping[str, Any]) -> None:
+    """Keep provenance when two search queries return the same normalized URL."""
+
+    for metadata_field in ("query_ids", "provider_hits", "alternate_urls"):
+        values = existing.setdefault(metadata_field, [])
+        if not isinstance(values, list):
+            values = []
+            existing[metadata_field] = values
+        additions: list[str] = []
+        if metadata_field == "provider_hits":
+            provider = incoming.get("provider")
+            if isinstance(provider, str):
+                additions.append(provider.strip())
+        elif metadata_field == "alternate_urls":
+            url = incoming.get("url")
+            if isinstance(url, str):
+                additions.append(normalize_source_url(url))
+        for value in additions:
+            if value and value not in values:
+                values.append(value)
+    existing["duplicate_count"] = int(existing.get("duplicate_count", 0)) + 1
+    candidate_id = incoming.get("candidate_id")
+    if isinstance(candidate_id, str) and candidate_id.strip():
+        candidate_ids = existing.setdefault("candidate_ids", [existing["candidate_id"]])
+        if candidate_id not in candidate_ids:
+            candidate_ids.append(candidate_id)
 
 
 def _usable_content(value: object, minimum: int) -> bool:

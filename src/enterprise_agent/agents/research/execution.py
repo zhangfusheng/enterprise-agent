@@ -6,6 +6,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextvars import copy_context
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 from enterprise_agent.agents.research.planning import PlanValidationError
@@ -85,15 +86,27 @@ class ResearchExecutor:
         )
         search_tool = next(tool for tool in tools if tool.name == "web_search")
         fetch_tool = next((tool for tool in tools if tool.name == "web_fetch"), None)
+        effective_as_of = request.as_of or datetime.now(UTC)
         self._execute_queries(plan, search_tool, control)
-        control.order_sources({query.query_id: index for index, query in enumerate(plan.queries)})
+        control.rank_candidates(
+            preferred_domains=plan.preferred_domains,
+            required_source_types=plan.required_source_types,
+            freshness_days=plan.freshness_days,
+            as_of=effective_as_of,
+        )
         if (
             self.allow_fetch
             and fetch_tool is not None
-            and self.loop_policy.require_fetch
+            and control.policy.require_fetch
             and control.candidates()
         ):
             self._execute_fetches(fetch_tool, control)
+            control.rank_candidates(
+                preferred_domains=plan.preferred_domains,
+                required_source_types=plan.required_source_types,
+                freshness_days=plan.freshness_days,
+                as_of=effective_as_of,
+            )
         return ResearchExecution(plan=plan, control=control)
 
     def _bounded_policy(self, plan: ResearchPlan) -> ResearchLoopPolicy:
@@ -219,9 +232,6 @@ class ResearchExecutor:
                 control.errors.append(
                     f"fetch failed for {url}: {parsed.get('error') or 'fetch failed'}"
                 )
-            if len(control.evidence()) >= control.policy.min_usable_sources:
-                control.stop("evidence_sufficient")
-                return
 
 
 def _json_payload(payload: Any) -> dict[str, Any]:

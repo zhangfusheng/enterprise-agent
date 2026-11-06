@@ -1,0 +1,27 @@
+2026-11-05 20:42:15,035 INFO uvicorn.error Application startup complete.
+2026-11-05 20:42:15,035 INFO uvicorn.error Application startup complete.
+2026-11-05 20:42:15,038 INFO uvicorn.error Uvicorn running on http://127.0.0.1:18000 (Press CTRL+C to quit)
+2026-11-05 20:42:15,038 INFO uvicorn.error Uvicorn running on http://127.0.0.1:18000 (Press CTRL+C to quit)
+2026-11-05 20:42:20,568 INFO uvicorn.access 127.0.0.1:33670 - "GET /health HTTP/1.1" 200
+2026-11-05 20:42:52,739 INFO uvicorn.access 127.0.0.1:41760 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-05 20:42:52,867 INFO uvicorn.access 127.0.0.1:41766 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-05 20:42:53,669 INFO uvicorn.access 127.0.0.1:41768 - "POST /api/v1/runs HTTP/1.1" 202
+2026-11-05 20:42:53,684 INFO uvicorn.access 127.0.0.1:41782 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-05 20:42:53,746 INFO uvicorn.access 127.0.0.1:41788 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0 HTTP/1.1" 200
+2026-11-05 20:42:53,753 INFO uvicorn.access 127.0.0.1:41796 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0/events?after=0 HTTP/1.1" 200
+2026-11-05 20:42:53,775 INFO uvicorn.access 127.0.0.1:41812 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0 HTTP/1.1" 200
+2026-11-05 20:42:53,783 INFO uvicorn.access 127.0.0.1:41828 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0/events?after=0 HTTP/1.1" 200
+2026-11-05 20:42:54,840 INFO enterprise_agent.orchestration node=parse_route model_version=none prompt_version=none run_id=run_c2a7019c26ee46daa2c0 route=single rationale=目标可由一个具备所需能力的 Worker 完成。 external_network_allowed=True network_mode=offline_fixture parser=rules goal_ids=goal_main input_chars=10
+2026-11-05 20:42:54,856 INFO enterprise_agent.orchestration node=plan model_version=none prompt_version=none run_id=run_c2a7019c26ee46daa2c0 plan_version=1 task_count=1 planner=template task_mapping={} task_actions={'task_worker': 'new'} retired_task_ids=none
+2026-11-05 20:42:55,268 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_c2a7019c26ee46daa2c0 task_id=task_worker task_status=SUCCEEDED attempts=1 result_status=SUCCESS recovery_action=PROCEED
+2026-11-05 20:42:55,298 INFO enterprise_agent.orchestration node=accept model_version=none prompt_version=none run_id=run_c2a7019c26ee46daa2c0 status=SUCCEEDED
+2026-11-05 20:42:55,315 INFO enterprise_agent.orchestration node=metrics model_version=none prompt_version=none run_id=run_c2a7019c26ee46daa2c0 model_calls=1 structured_output_failures=0 fallbacks=0 retries=0 input_tokens=0 output_tokens=0 latency_ms=388 cost_usd=0.0
+2026-11-05 20:42:55,851 INFO uvicorn.access 127.0.0.1:41836 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0 HTTP/1.1" 200
+2026-11-05 20:43:02,379 INFO uvicorn.access 127.0.0.1:53418 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0/trace HTTP/1.1" 200
+2026-11-05 20:43:15,929 INFO uvicorn.access 127.0.0.1:50506 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-05 20:43:15,936 INFO uvicorn.access 127.0.0.1:50518 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0/events?after=0 HTTP/1.1" 200
+2026-11-05 20:43:15,952 INFO uvicorn.access 127.0.0.1:50532 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0 HTTP/1.1" 200
+2026-11-05 20:43:15,960 INFO uvicorn.access 127.0.0.1:50520 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-05 20:43:15,962 INFO uvicorn.access 127.0.0.1:50544 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0/events?after=0 HTTP/1.1" 200
+2026-11-05 20:43:16,238 INFO uvicorn.access 127.0.0.1:50558 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0 HTTP/1.1" 200
+2026-11-05 20:43:16,999 INFO uvicorn.access 127.0.0.1:50580 - "GET /api/v1/runs/run_c2a7019c26ee46daa2c0/trace HTTP/1.1" 200

@@ -63,11 +63,16 @@ def test_policy_rejects_unknown_delegate(tmp_path: Path):
         _load_policy(path)
 
 
-def test_production_startup_does_not_create_schema(tmp_path: Path):
+def test_production_startup_does_not_create_schema(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setenv("TAVILY_API_KEY", "test-tavily-key")
     settings = Settings(
         environment="production",
         offline_mode=False,
         dev_identity=False,
+        allow_external_network=True,
         database_url=f"sqlite:///{tmp_path}/app.sqlite",
         checkpoint_url=f"sqlite:///{tmp_path}/checkpoint.sqlite",
         artifact_root=tmp_path / "artifacts",

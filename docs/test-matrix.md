@@ -9,7 +9,7 @@
 | security | 租户隔离、路径穿越、SSRF 私网地址 | `uv run pytest tests/security` | 离线 |
 | workflows | 四个 examples 的端到端入口 | `uv run pytest tests/workflows` | SQLite + fixture |
 | evals | 路由数据集和 grader | `uv run python -m evals.run_offline` | 离线 |
-| real | OpenAI-compatible/Anthropic 与 DuckDuckGo | 显式 `EA_REAL_TESTS=1` 后另行运行 | 不属于无凭证 CI |
+| real | OpenAI-compatible/Anthropic 与 Tavily/Doubao Search API | 显式 `EA_REAL_TESTS=1` 后另行运行 | 不属于无凭证 CI |
 
 提示注入用例只证明指定输入下的权限边界；不能据此声称彻底解决提示注入。
 

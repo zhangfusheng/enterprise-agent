@@ -41,6 +41,17 @@ class Settings(BaseSettings):
     research_max_candidate_sources: int = Field(default=30, ge=1)
     research_min_content_length: int = Field(default=80, ge=1)
     research_require_fetch: bool = True
+    search_primary_provider: str = "tavily"
+    search_fallback_providers: str = ""
+    search_provider_timeout_seconds: float = Field(default=8.0, gt=0)
+    search_provider_retry_count: int = Field(default=1, ge=0, le=3)
+    search_provider_retry_backoff_seconds: float = Field(default=0.25, ge=0)
+    search_max_results: int = Field(default=10, ge=1, le=20)
+    tavily_api_key_ref: str = "TAVILY_API_KEY"
+    tavily_search_depth: str = "basic"
+    doubao_search_api_key_ref: str = "DOUBAO_SEARCH_API_KEY"
+    doubao_search_max_query_chars: int = Field(default=500, ge=1)
+    doubao_search_query_rewrite: bool = False
     openai_api_key_ref: str = "OPENAI_API_KEY"
     anthropic_api_key_ref: str = "ANTHROPIC_API_KEY"
     real_tests: bool = False
@@ -62,6 +73,21 @@ class Settings(BaseSettings):
             raise ValueError("log level must be DEBUG, INFO, WARNING, ERROR, or CRITICAL")
         return normalized
 
+    @field_validator("search_primary_provider", "tavily_search_depth")
+    @classmethod
+    def known_search_tokens(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if not normalized:
+            raise ValueError("search provider settings must not be blank")
+        return normalized
+
+    @field_validator("search_fallback_providers")
+    @classmethod
+    def normalize_search_fallbacks(cls, value: str) -> str:
+        return ",".join(
+            item.strip().lower() for item in value.split(",") if item.strip()
+        )
+
     @field_validator("log_file", mode="before")
     @classmethod
     def blank_log_file_is_unset(cls, value: object) -> object:
@@ -75,6 +101,14 @@ class Settings(BaseSettings):
         if self.environment == "production" and self.offline_mode:
             raise ValueError("EA_OFFLINE_MODE=true is not allowed in production")
         self.artifact_root.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def search_fallback_provider_names(self) -> tuple[str, ...]:
+        return tuple(
+            item.strip().lower()
+            for item in self.search_fallback_providers.split(",")
+            if item.strip()
+        )
 
 
 def load_local_env(path: Path | None = None) -> None:

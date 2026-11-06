@@ -58,8 +58,14 @@ from enterprise_agent.tools.gateway import ToolGateway
 from enterprise_agent.tools.registry import ToolRegistry
 from enterprise_agent.tools.save_report import ReportStore
 from enterprise_agent.tools.web.fetch import web_fetch
-from enterprise_agent.tools.web.provider import DuckDuckGoSearchProvider, OfflineSearchProvider
+from enterprise_agent.tools.web.provider import (
+    ProviderRegistry,
+    SearchProvider,
+    SearchProviderRouter,
+)
+from enterprise_agent.tools.web.providers import DoubaoSearchProvider, TavilySearchProvider
 from enterprise_agent.tools.web.search import web_search
+from enterprise_agent.tools.web.testing import FixtureSearchProvider
 from enterprise_agent.tools.workspace import Workspace, WorkspaceDenied
 
 from .settings import Settings, get_settings
@@ -128,11 +134,7 @@ class Container:
         self.policy, self.policy_version = _load_policy(root / "agents.yaml")
         self.orchestration_version = _orchestration_version(root / "orchestration.yaml")
         self.report_store = ReportStore(self.settings.artifact_root)
-        self.search_provider = (
-            OfflineSearchProvider()
-            if self.settings.offline_mode
-            else DuckDuckGoSearchProvider()
-        )
+        self.search_provider = _build_search_provider(self.settings)
         self.harness = DeepAgentsHarness(self.models, _harness_roles(), traces=self.traces)
         self.budget_limits = _budget_limits(self.settings)
         self.tools = self._build_tools()
@@ -197,6 +199,7 @@ class Container:
         )
 
     def close(self) -> None:
+        self.search_provider.close()
         self.engine.dispose()
 
     @property
@@ -268,7 +271,11 @@ class Container:
                 required_scopes={"web"},
                 timeout_seconds=_WEB_TOOL_TIMEOUT_SECONDS,
             ),
-            partial(web_search, self.search_provider),
+            partial(
+                web_search,
+                self.search_provider,
+                max_limit=self.settings.search_max_results,
+            ),
         )
         registry.register(
             ToolSpec(
@@ -347,6 +354,46 @@ def _should_create_schema(settings: Settings, initialize_db: bool | None) -> boo
     if initialize_db is not None:
         return initialize_db
     return settings.environment != "production"
+
+
+def _build_search_provider(settings: Settings) -> SearchProviderRouter:
+    if settings.offline_mode:
+        registry = ProviderRegistry([FixtureSearchProvider()])
+        return SearchProviderRouter(registry, "fixture", retry_count=0)
+    if not settings.allow_external_network:
+        raise BootstrapError(
+            "external search requires EA_ALLOW_EXTERNAL_NETWORK=true when offline mode is disabled"
+        )
+    configured_names = (
+        settings.search_primary_provider,
+        *settings.search_fallback_provider_names,
+    )
+    providers: list[SearchProvider] = []
+    if "tavily" in configured_names:
+        providers.append(
+            TavilySearchProvider(
+                api_key_ref=settings.tavily_api_key_ref,
+                timeout=settings.search_provider_timeout_seconds,
+                search_depth=settings.tavily_search_depth,
+            )
+        )
+    if "doubao_custom" in configured_names:
+        providers.append(
+            DoubaoSearchProvider(
+                api_key_ref=settings.doubao_search_api_key_ref,
+                timeout=settings.search_provider_timeout_seconds,
+                max_query_chars=settings.doubao_search_max_query_chars,
+                query_rewrite=settings.doubao_search_query_rewrite,
+            )
+        )
+    registry = ProviderRegistry(providers)
+    return SearchProviderRouter(
+        registry,
+        settings.search_primary_provider,
+        settings.search_fallback_provider_names,
+        retry_count=settings.search_provider_retry_count,
+        retry_backoff_seconds=settings.search_provider_retry_backoff_seconds,
+    )
 
 
 def _budget_limits(settings: Settings) -> BudgetLimits:

@@ -12,6 +12,7 @@ from enterprise_agent.agents.research.schemas import (
 from enterprise_agent.agents.research.tools import ResearchLoopPolicy
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import ResultStatus
+from enterprise_agent.tools.web.fetch import WebFetcher
 from enterprise_agent.tools.web.provider import SearchRequest, SearchResponse
 
 
@@ -69,6 +70,7 @@ def _core(provider: _Search, draft: ResearchPlanDraft) -> ResearchCore:
     )
     return ResearchCore(
         provider,
+        WebFetcher(),
         planner=planner,
         loop_policy=ResearchLoopPolicy(require_fetch=False, min_usable_sources=1),
     )

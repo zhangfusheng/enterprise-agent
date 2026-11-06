@@ -2,7 +2,7 @@
 
 | 层级 | 覆盖 | 命令 | 离线/真实 |
 | --- | --- | --- | --- |
-| unit | 路由、计划 DAG、模型结构化协议、计算、网络/文件策略、预算/委派 | `uv run pytest tests/unit` | 离线确定性 |
+| unit | 路由、计划 DAG、Fetcher/Extractor、来源排序/去重/时效、证据索引/引用校验、模型结构化协议、计算、网络/文件策略、预算/委派 | `uv run pytest tests/unit` | 离线确定性 |
 | contract | Pydantic 契约、模型绑定、工具返回语义 | `uv run pytest tests/contract` | 离线 |
 | integration | API/Worker 同一仓库、direct/single/multi/报告/子委派 | `uv run pytest tests/integration` | SQLite + fixture |
 | recovery | 租约竞争、心跳续租、fencing token、原子提交、死信 | `uv run pytest tests/recovery` | SQLite |

@@ -11,6 +11,7 @@ from enterprise_agent.agents.research.schemas import (
 from enterprise_agent.agents.research.tools import ResearchLoopPolicy
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import ResultStatus
+from enterprise_agent.tools.web.fetch import WebFetcher
 from enterprise_agent.tools.web.provider import SearchRequest, SearchResponse
 
 
@@ -83,6 +84,7 @@ def _agent(provider: _Search) -> ResearchAgent:
     )
     return ResearchAgent(
         provider,
+        WebFetcher(),
         planner=planner,
         loop_policy=ResearchLoopPolicy(
             max_search_calls=2,
@@ -121,6 +123,7 @@ def test_agent_does_not_search_when_plan_generation_fails():
     )
     agent = ResearchAgent(
         provider,
+        WebFetcher(),
         planner=planner,
         loop_policy=ResearchLoopPolicy(require_fetch=False),
     )

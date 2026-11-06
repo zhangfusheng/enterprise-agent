@@ -66,8 +66,8 @@ class _Delegation:
         self.analysis_agent = agent
         self.calls = []
 
-    def delegate_analysis(self, parent, objective, evidence, agent_count):
-        self.calls.append((parent, objective, evidence, agent_count))
+    def delegate_analysis(self, parent, objective, evidence, agent_count, *, research_evidence=None):
+        self.calls.append((parent, objective, evidence, agent_count, research_evidence))
         return AgentResult(status=ResultStatus.SUCCESS, summary="delegated")
 
 
@@ -149,9 +149,11 @@ def test_analysis_reads_dependency_evidence_and_can_delegate():
     delegated = worker.execute(task, _context(), prior, delegate=True, agent_count=2)
 
     assert direct.summary == "write the report"
-    assert agent.request.evidence == [{"title": "source"}]
+    assert agent.request.evidence == []
+    assert agent.request.research_evidence.sources == []
     assert delegated.summary == "delegated"
-    assert delegation.calls[0][1:] == ("write the report", [{"title": "source"}], 2)
+    assert delegation.calls[0][1:4] == ("write the report", [], 2)
+    assert delegation.calls[0][4].sources == []
 
 
 def test_bind_run_replaces_gateway_on_every_bound_agent():

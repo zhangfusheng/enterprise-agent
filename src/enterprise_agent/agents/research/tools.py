@@ -15,12 +15,13 @@ from urllib.parse import urlsplit, urlunsplit
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
+from enterprise_agent.agents.research.schemas import PageDocument
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.runtime.budgets import BudgetExceeded
 from enterprise_agent.runtime.cancellation import CancellationRequested
 from enterprise_agent.tools.contracts import ToolCall, ToolStatus
 from enterprise_agent.tools.gateway import ToolDenied, ToolGateway
-from enterprise_agent.tools.web.fetch import web_fetch
+from enterprise_agent.tools.web.fetch import WebFetcher
 from enterprise_agent.tools.web.provider import SearchProvider
 from enterprise_agent.tools.web.search import web_search
 
@@ -304,25 +305,49 @@ class RunControl:
                 accepted.append(source)
         return accepted
 
-    def record_fetch(self, url: str, value: Any, error: str | None = None) -> None:
+    def record_fetch(self, url: str, value: Any, error: str | None = None) -> bool:
         with self._lock:
             if error is not None:
                 self.errors.append(f"fetch failed for {url}: {error}")
-                return
-            if not isinstance(value, Mapping) or not _usable_content(
-                value.get("content"), self.policy.min_content_length
+                return False
+            if not isinstance(value, Mapping):
+                self.errors.append(f"fetch failed for {url}: invalid fetch result")
+                return False
+            raw_document = value.get("document")
+            try:
+                document = PageDocument.model_validate(raw_document)
+            except Exception:
+                document = None
+            if document is None or not _usable_content(
+                document.content, self.policy.min_content_length
             ):
                 self.errors.append(f"fetch failed for {url}: content did not pass quality gate")
-                return
+                return False
             source = self._sources.get(_normalize_url(url))
             if source is None:
                 self.stats.rejected_source_count += 1
                 self.errors.append(f"fetch failed for {url}: source was not a search candidate")
-                return
-            source["content"] = str(value["content"]).strip()
-            for key in ("final_url", "title", "fetched_at", "content_type"):
-                if key in value:
-                    source[key] = value[key]
+                return False
+            document_data = document.model_dump(mode="json")
+            source.update(
+                {
+                    "content": document.content,
+                    "paragraphs": document.paragraphs,
+                    "document_id": document.document_id,
+                    "canonical_url": document.canonical_url,
+                    "content_hash": document.content_hash,
+                    "extraction_method": document.extraction_method,
+                    "final_url": document.final_url,
+                    "title": document.title or source.get("title", ""),
+                    "fetched_at": document_data["fetched_at"],
+                    "content_type": document.content_type,
+                }
+            )
+            if document.published_at is not None:
+                source["published_at"] = document_data["published_at"]
+            if document.modified_at is not None:
+                source["modified_at"] = document_data["modified_at"]
+            return True
 
     def reject_source(self, url: str, reason: str) -> None:
         with self._lock:
@@ -369,6 +394,7 @@ class _FetchArgs(BaseModel):
 def bind_research_tools(
     *,
     provider: SearchProvider,
+    fetcher: WebFetcher,
     gateway: ToolGateway | None,
     allow_fetch: bool,
     skip_prefixes: tuple[str, ...],
@@ -382,7 +408,7 @@ def bind_research_tools(
         return _search(provider, gateway, context, control, query, limit, limit_cap=limit_cap)
 
     def fetch(url: str) -> str:
-        return _fetch(gateway, context, control, url, skip_prefixes=skip_prefixes)
+        return _fetch(fetcher, gateway, context, control, url, skip_prefixes=skip_prefixes)
 
     tools = [
         StructuredTool.from_function(
@@ -444,6 +470,7 @@ def _search(
 
 
 def _fetch(
+    fetcher: WebFetcher,
     gateway: ToolGateway | None,
     context: ExecutionContext,
     control: RunControl,
@@ -461,7 +488,7 @@ def _fetch(
         return _payload(ok=True, skipped=True, url=url)
     try:
         if gateway is None:
-            value = web_fetch(url)
+            value = fetcher.fetch(url)
         else:
             result = gateway.call(context, ToolCall(name="web_fetch", arguments={"url": url}))
             if result.status != ToolStatus.SUCCESS:
@@ -472,15 +499,23 @@ def _fetch(
         control.capture(exc)
         raise
     except Exception as exc:
-        control.record_fetch(url, None, type(exc).__name__)
-        return _payload(ok=False, error=type(exc).__name__, url=url)
-    if not isinstance(value, Mapping) or value.get("content") is None:
-        control.record_fetch(url, value, "missing content")
-        return _payload(ok=False, error="missing content", url=url)
-    control.record_fetch(url, value)
+        error = getattr(exc, "code", type(exc).__name__)
+        control.record_fetch(url, None, str(error))
+        return _payload(ok=False, error=str(error), url=url)
+    if not isinstance(value, Mapping) or value.get("document") is None:
+        control.record_fetch(url, value, "missing document")
+        return _payload(ok=False, error="missing document", url=url)
+    accepted = control.record_fetch(url, value)
+    if not accepted:
+        return _payload(ok=False, error="content did not pass quality gate", url=url)
     if control.should_stop_after_call():
         raise ResearchLoopStopped(control.stats.stop_reason or _TOOL_BUDGET_EXHAUSTED)
-    return _payload(ok=True, url=url, content=value.get("content"))
+    return _payload(
+        ok=True,
+        url=url,
+        document=value.get("document"),
+        fetch=value.get("fetch", {}),
+    )
 
 
 def _payload(**fields: Any) -> str:

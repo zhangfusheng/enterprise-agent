@@ -14,6 +14,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any
 
+import httpx
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -66,7 +67,7 @@ from enterprise_agent.tools.contracts import ToolSpec
 from enterprise_agent.tools.gateway import ToolGateway
 from enterprise_agent.tools.registry import ToolRegistry
 from enterprise_agent.tools.save_report import ReportStore
-from enterprise_agent.tools.web.fetch import web_fetch
+from enterprise_agent.tools.web.fetch import WebFetcher
 from enterprise_agent.tools.web.provider import (
     ProviderRegistry,
     SearchProvider,
@@ -81,6 +82,7 @@ from .settings import Settings, get_settings
 
 _SCOPE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _WEB_TOOL_TIMEOUT_SECONDS = 20.0
+_WEB_FETCH_TOOL_TIMEOUT_SECONDS = 40.0
 
 
 class BootstrapError(RuntimeError):
@@ -144,6 +146,7 @@ class Container:
         self.orchestration_version = _orchestration_version(root / "orchestration.yaml")
         self.report_store = ReportStore(self.settings.artifact_root)
         self.search_provider = _build_search_provider(self.settings)
+        self.web_fetcher = _build_web_fetcher(self.settings)
         self.harness = DeepAgentsHarness(self.models, _harness_roles(), traces=self.traces)
         self.research_planner = ResearchPlanner(
             lambda context: _research_plan_completion(self.models, self.settings, context),
@@ -161,6 +164,7 @@ class Container:
         self.tool_gateway = self.open_gateway()
         self.research = ResearchAgent(
             self.search_provider,
+            self.web_fetcher,
             planner=self.research_planner,
             gateway=self.tool_gateway,
             loop_policy=ResearchLoopPolicy(
@@ -218,6 +222,7 @@ class Container:
         )
 
     def close(self) -> None:
+        self.web_fetcher.close()
         self.search_provider.close()
         self.engine.dispose()
 
@@ -255,6 +260,17 @@ class Container:
                     "fallback_providers": self.settings.search_fallback_provider_names,
                     "active_providers": self.search_provider.provider_names,
                     "doubao_max_query_chars": self.settings.doubao_search_max_query_chars,
+                },
+                "web_fetch": {
+                    "connect_timeout_seconds": self.settings.web_fetch_connect_timeout_seconds,
+                    "read_timeout_seconds": self.settings.web_fetch_read_timeout_seconds,
+                    "write_timeout_seconds": self.settings.web_fetch_write_timeout_seconds,
+                    "pool_timeout_seconds": self.settings.web_fetch_pool_timeout_seconds,
+                    "max_bytes": self.settings.web_fetch_max_bytes,
+                    "max_text_chars": self.settings.web_fetch_max_text_chars,
+                    "max_redirects": self.settings.web_fetch_max_redirects,
+                    "max_retries": self.settings.web_fetch_max_retries,
+                    "max_pdf_pages": self.settings.web_fetch_max_pdf_pages,
                 },
                 "research_plan": {
                     "max_search_calls": self.settings.research_max_search_calls,
@@ -314,9 +330,10 @@ class Container:
                 name="web_fetch",
                 description="Fetch a public web page",
                 required_scopes={"web"},
-                timeout_seconds=_WEB_TOOL_TIMEOUT_SECONDS,
+                timeout_seconds=_WEB_FETCH_TOOL_TIMEOUT_SECONDS,
+                max_result_bytes=300_000,
             ),
-            web_fetch,
+            self.web_fetcher.fetch,
         )
         registry.register(
             ToolSpec(name="calculate", description="Deterministic calculation"),
@@ -425,6 +442,25 @@ def _build_search_provider(settings: Settings) -> SearchProviderRouter:
         settings.search_fallback_provider_names,
         retry_count=settings.search_provider_retry_count,
         retry_backoff_seconds=settings.search_provider_retry_backoff_seconds,
+    )
+
+
+def _build_web_fetcher(settings: Settings) -> WebFetcher:
+    timeout = httpx.Timeout(
+        connect=settings.web_fetch_connect_timeout_seconds,
+        read=settings.web_fetch_read_timeout_seconds,
+        write=settings.web_fetch_write_timeout_seconds,
+        pool=settings.web_fetch_pool_timeout_seconds,
+    )
+    return WebFetcher(
+        timeout=timeout,
+        max_bytes=settings.web_fetch_max_bytes,
+        max_text_chars=settings.web_fetch_max_text_chars,
+        max_redirects=settings.web_fetch_max_redirects,
+        max_retries=settings.web_fetch_max_retries,
+        max_pdf_pages=settings.web_fetch_max_pdf_pages,
+        allow_http_downgrade=settings.web_fetch_allow_http_downgrade,
+        user_agent=settings.web_fetch_user_agent,
     )
 
 

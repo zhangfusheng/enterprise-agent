@@ -24,6 +24,7 @@ from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.infrastructure.observability.tracing import trace
 from enterprise_agent.runtime.cancellation import CancellationRequested
 from enterprise_agent.tools.gateway import ToolDenied, ToolGateway
+from enterprise_agent.tools.web.fetch import WebFetcher
 from enterprise_agent.tools.web.provider import SearchProvider
 
 
@@ -47,12 +48,14 @@ class ResearchExecutor:
     def __init__(
         self,
         provider: SearchProvider,
+        fetcher: WebFetcher,
         *,
         allow_fetch: bool = True,
         skip_fetch_prefixes: tuple[str, ...] = (),
         loop_policy: ResearchLoopPolicy | None = None,
     ) -> None:
         self.provider = provider
+        self.fetcher = fetcher
         self.allow_fetch = allow_fetch
         self.skip_fetch_prefixes = tuple(skip_fetch_prefixes)
         self.loop_policy = loop_policy or ResearchLoopPolicy()
@@ -72,6 +75,7 @@ class ResearchExecutor:
         )
         tools = bind_research_tools(
             provider=self.provider,
+            fetcher=self.fetcher,
             gateway=gateway,
             allow_fetch=self.allow_fetch,
             skip_prefixes=self.skip_fetch_prefixes,

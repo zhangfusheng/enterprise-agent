@@ -8,6 +8,7 @@ from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import AgentResult
 from enterprise_agent.infrastructure.observability.tracing import trace
 from enterprise_agent.tools.gateway import ToolGateway
+from enterprise_agent.tools.web.fetch import WebFetcher
 from enterprise_agent.tools.web.provider import SearchProvider
 
 
@@ -21,6 +22,7 @@ class ResearchAgent:
     def __init__(
         self,
         provider: SearchProvider,
+        fetcher: WebFetcher,
         *,
         planner: ResearchPlanner,
         allow_fetch: bool = True,
@@ -29,6 +31,7 @@ class ResearchAgent:
         loop_policy: ResearchLoopPolicy | None = None,
     ) -> None:
         self.provider = provider
+        self.fetcher = fetcher
         self.planner = planner
         self.allow_fetch = allow_fetch
         self.gateway = gateway
@@ -36,6 +39,7 @@ class ResearchAgent:
         self.loop_policy = loop_policy or ResearchLoopPolicy()
         self.core = ResearchCore(
             provider,
+            fetcher,
             planner=planner,
             allow_fetch=allow_fetch,
             skip_fetch_prefixes=self.skip_fetch_prefixes,

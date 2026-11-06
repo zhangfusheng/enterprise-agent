@@ -87,7 +87,8 @@ class ToolGateway:
             status = ToolStatus.UNKNOWN if registered.spec.has_side_effect else ToolStatus.FAILED
             result = ToolResult(status=status, error="tool timed out", operation_id=operation_id)
         except Exception as exc:  # boundary converts tool failures to a safe result
-            result = ToolResult(status=ToolStatus.FAILED, error=type(exc).__name__, operation_id=operation_id)
+            safe_error = getattr(exc, "code", type(exc).__name__)
+            result = ToolResult(status=ToolStatus.FAILED, error=str(safe_error), operation_id=operation_id)
         self._remember(operation_id, result)
         return result
 

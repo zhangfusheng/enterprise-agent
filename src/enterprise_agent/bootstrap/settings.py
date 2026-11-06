@@ -44,6 +44,17 @@ class Settings(BaseSettings):
     research_plan_max_concurrency: int = Field(default=3, ge=1)
     research_plan_repair_attempts: int = Field(default=1, ge=0, le=2)
     research_plan_allow_partial_results: bool = True
+    web_fetch_connect_timeout_seconds: float = Field(default=5.0, gt=0)
+    web_fetch_read_timeout_seconds: float = Field(default=15.0, gt=0)
+    web_fetch_write_timeout_seconds: float = Field(default=5.0, gt=0)
+    web_fetch_pool_timeout_seconds: float = Field(default=5.0, gt=0)
+    web_fetch_max_bytes: int = Field(default=2_000_000, ge=1)
+    web_fetch_max_text_chars: int = Field(default=100_000, ge=1)
+    web_fetch_max_redirects: int = Field(default=3, ge=0, le=10)
+    web_fetch_max_retries: int = Field(default=1, ge=0, le=3)
+    web_fetch_max_pdf_pages: int = Field(default=50, ge=1)
+    web_fetch_allow_http_downgrade: bool = False
+    web_fetch_user_agent: str = "enterprise-agent/0.1"
     search_primary_provider: str = "tavily"
     search_fallback_providers: str = ""
     search_provider_timeout_seconds: float = Field(default=8.0, gt=0)

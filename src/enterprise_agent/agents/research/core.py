@@ -16,6 +16,7 @@ from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import AgentResult, ResultStatus
 from enterprise_agent.runtime.cancellation import CancellationRequested
 from enterprise_agent.tools.gateway import ToolDenied, ToolGateway
+from enterprise_agent.tools.web.fetch import WebFetcher
 from enterprise_agent.tools.web.provider import SearchProvider
 
 _SEARCH_FAILED = "搜索工具失败"
@@ -31,6 +32,7 @@ class ResearchCore:
     def __init__(
         self,
         provider: SearchProvider,
+        fetcher: WebFetcher,
         *,
         planner: ResearchPlanner,
         allow_fetch: bool = True,
@@ -38,6 +40,7 @@ class ResearchCore:
         loop_policy: ResearchLoopPolicy | None = None,
     ) -> None:
         self.provider = provider
+        self.fetcher = fetcher
         self.planner = planner
         self.allow_fetch = allow_fetch
         self.skip_fetch_prefixes = tuple(skip_fetch_prefixes)
@@ -67,6 +70,7 @@ class ResearchCore:
 
         executor = ResearchExecutor(
             self.provider,
+            self.fetcher,
             allow_fetch=self.allow_fetch,
             skip_fetch_prefixes=self.skip_fetch_prefixes,
             loop_policy=self.loop_policy,

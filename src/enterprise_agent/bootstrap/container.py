@@ -39,6 +39,7 @@ from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.governance.authorization import AuthorizationPolicy, RolePolicy
 from enterprise_agent.governance.budgets import BudgetLimits
 from enterprise_agent.governance.delegation import DelegationGuard
+from enterprise_agent.infrastructure.cache.research import build_research_cache
 from enterprise_agent.infrastructure.checkpoints.store import CheckpointFactory
 from enterprise_agent.infrastructure.database.migrations import create_all
 from enterprise_agent.infrastructure.database.session import build_engine, session_factory
@@ -147,6 +148,7 @@ class Container:
         self.report_store = ReportStore(self.settings.artifact_root)
         self.search_provider = _build_search_provider(self.settings)
         self.web_fetcher = _build_web_fetcher(self.settings)
+        self.research_cache = build_research_cache(self.settings)
         self.harness = DeepAgentsHarness(self.models, _harness_roles(), traces=self.traces)
         self.research_planner = ResearchPlanner(
             lambda context: _research_plan_completion(self.models, self.settings, context),
@@ -182,6 +184,7 @@ class Container:
                     and not self.settings.offline_mode
                 ),
             ),
+            cache=self.research_cache,
         )
         self.research_application = ResearchApplication(self.research, self.open_gateway)
         self.analysis = AnalysisAgent(
@@ -223,6 +226,7 @@ class Container:
     def close(self) -> None:
         self.web_fetcher.close()
         self.search_provider.close()
+        self.research_cache.close()
         self.engine.dispose()
 
     @property
@@ -276,6 +280,18 @@ class Container:
                     "max_fetch_calls": self.settings.research_max_fetch_calls,
                     "max_concurrency": self.settings.research_plan_max_concurrency,
                     "repair_attempts": self.settings.research_plan_repair_attempts,
+                },
+                "research_cache": {
+                    "backend": self.settings.research_cache_backend,
+                    "read_enabled": self.settings.research_cache_read_enabled,
+                    "write_enabled": self.settings.research_cache_write_enabled,
+                    "fetch_enabled": self.settings.research_cache_fetch_enabled,
+                    "gray_percentage": self.settings.research_gray_percentage,
+                    "key_version": self.settings.research_cache_key_version,
+                    "search_ttl_seconds": self.settings.research_cache_search_ttl_seconds,
+                    "fetch_ttl_seconds": self.settings.research_cache_fetch_ttl_seconds,
+                    "stale_grace_seconds": self.settings.research_cache_stale_grace_seconds,
+                    "observability_enabled": self.settings.research_observability_enabled,
                 },
                 "max_replans": self.settings.max_replans,
                 "max_tasks": self.settings.max_tasks,

@@ -107,6 +107,61 @@ def test_validator_recomputes_counts_and_accepts_exact_paragraph_quote():
     assert report.verification_summary["valid_citation_count"] == 1
 
 
+def test_validator_normalizes_a_unique_title_used_as_document_id():
+    document = _document()
+    index = EvidenceIndex.from_sources(
+        [_source(document)],
+        assessments=[_assessment()],
+    )
+    claim = EvidenceClaim(
+        claim_id="claim-title-alias",
+        text="系统保留证据。",
+        support_status=SupportStatus.SUPPORTED,
+        confidence=0.9,
+        citations=[
+            EvidenceCitation(
+                document_id=document.title,
+                url=document.canonical_url,
+                quote="Agent systems should preserve evidence.",
+                locator="paragraph:2",
+            )
+        ],
+    )
+
+    report = EvidencePackValidator(index).validate_claims([claim])
+
+    assert report.valid is True
+    assert report.validated_claims[0].citations[0].document_id == document.document_id
+
+
+def test_validator_rejects_an_ambiguous_title_alias():
+    first = _document(document_id="doc-1")
+    second = _document(
+        document_id="doc-2",
+        original_url="https://other.example/article",
+        canonical_url="https://other.example/article",
+    )
+    index = EvidenceIndex.from_sources([_source(first), _source(second)])
+    claim = EvidenceClaim(
+        claim_id="claim-ambiguous-title",
+        text="系统保留证据。",
+        support_status=SupportStatus.SUPPORTED,
+        confidence=0.9,
+        citations=[
+            EvidenceCitation(
+                document_id="Title",
+                url=first.original_url,
+                quote="Agent systems should preserve evidence.",
+            )
+        ],
+    )
+
+    report = EvidencePackValidator(index).validate_claims([claim])
+
+    assert report.valid is False
+    assert report.issues[0].code == "document_not_found"
+
+
 def test_validator_rejects_wrong_quote_locator_and_url():
     document = _document()
     index = EvidenceIndex.from_documents([document])

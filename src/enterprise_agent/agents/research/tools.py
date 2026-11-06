@@ -8,6 +8,7 @@ the model does not choose ad-hoc tool calls.
 import hashlib
 import json
 import threading
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -25,6 +26,15 @@ from enterprise_agent.agents.research.ranking import (
 )
 from enterprise_agent.agents.research.schemas import PageDocument, SourceAssessment, SourceType
 from enterprise_agent.contracts.context import ExecutionContext
+from enterprise_agent.infrastructure.cache.research import (
+    CacheLoadFailure,
+    ResearchCache,
+)
+from enterprise_agent.infrastructure.observability.metrics import (
+    ResearchOutcome,
+    record_research_event,
+)
+from enterprise_agent.infrastructure.observability.tracing import trace
 from enterprise_agent.runtime.budgets import BudgetExceeded
 from enterprise_agent.runtime.cancellation import CancellationRequested
 from enterprise_agent.tools.contracts import ToolCall, ToolStatus
@@ -508,14 +518,32 @@ def bind_research_tools(
     limit: int,
     context: ExecutionContext,
     control: RunControl,
+    cache: ResearchCache | None = None,
 ) -> list[StructuredTool]:
     limit_cap = limit
 
     def search(query: str, limit: int = 5) -> str:
-        return _search(provider, gateway, context, control, query, limit, limit_cap=limit_cap)
+        return _search(
+            provider,
+            gateway,
+            context,
+            control,
+            query,
+            limit,
+            limit_cap=limit_cap,
+            cache=cache,
+        )
 
     def fetch(url: str) -> str:
-        return _fetch(fetcher, gateway, context, control, url, skip_prefixes=skip_prefixes)
+        return _fetch(
+            fetcher,
+            gateway,
+            context,
+            control,
+            url,
+            skip_prefixes=skip_prefixes,
+            cache=cache,
+        )
 
     tools = [
         StructuredTool.from_function(
@@ -546,31 +574,75 @@ def _search(
     limit: int,
     *,
     limit_cap: int,
+    cache: ResearchCache | None,
 ) -> str:
+    started = time.perf_counter()
     bounded = max(1, min(int(limit), int(limit_cap), 20))
     should_call = control.before_search(query)
     if not should_call:
         return _duplicate_payload("query", query, control)
-    try:
+    provider_name = _provider_cache_identity(provider)
+
+    def load() -> Any:
         if gateway is None:
-            value = web_search(provider, query, bounded)
+            return web_search(provider, query, bounded)
+        result = gateway.call(
+            context,
+            ToolCall(name="web_search", arguments={"query": query, "limit": bounded}),
+        )
+        if result.status != ToolStatus.SUCCESS:
+            raise CacheLoadFailure(result.error or "search failed")
+        return result.value
+
+    cache_state = "disabled"
+    try:
+        if cache is not None:
+            can_read = cache.policy.can_read(context, "search")
+            can_write = cache.policy.can_write(context, "search")
+            cache_state = "miss" if can_read or can_write else "disabled"
+            with trace("research_cache_lookup", "tool", extra={"stage": "search"}) as cache_span:
+                lookup = cache.get_or_set(
+                    cache.search_key(
+                        context,
+                        provider=provider_name,
+                        query=query,
+                        limit=bounded,
+                    ),
+                    load,
+                    ttl_seconds=cache.policy.ttl("search"),
+                    read_enabled=can_read,
+                    write_enabled=can_write,
+                    stale_if_error=cache.policy.stale_if_error,
+                )
+                cache_span.outputs = {"state": lookup.state}
+            cache_state = lookup.state
+            value = lookup.value
         else:
-            result = gateway.call(
-                context,
-                ToolCall(name="web_search", arguments={"query": query, "limit": bounded}),
-            )
-            if result.status != ToolStatus.SUCCESS:
-                control.record_search(None, result.error or "search failed")
-                return _payload(ok=False, error=result.error or "search failed")
-            value = result.value
+            value = load()
     except _RUN_CONTROL as exc:
         control.capture(exc)
         raise
+    except CacheLoadFailure as exc:
+        error = str(exc) or "search failed"
+        control.record_search(None, error)
+        _record_research("search", provider_name, started, cache_state, "error", error, cache)
+        return _payload(ok=False, error=error)
     except Exception as exc:
-        control.record_search(None, type(exc).__name__)
-        return _payload(ok=False, error=type(exc).__name__)
+        error = type(exc).__name__
+        control.record_search(None, error)
+        _record_research("search", provider_name, started, cache_state, "error", error, cache)
+        return _payload(ok=False, error=error)
     value = control.filter_search_results(value)
     value = control.record_search(value)
+    _record_research(
+        "search",
+        provider_name,
+        started,
+        cache_state,
+        "fallback" if cache_state == "stale" else "success",
+        None,
+        cache,
+    )
     if control.should_stop_after_call():
         raise ResearchLoopStopped(control.stats.stop_reason or _TOOL_BUDGET_EXHAUSTED)
     return _payload(ok=True, value=value)
@@ -584,7 +656,9 @@ def _fetch(
     url: str,
     *,
     skip_prefixes: tuple[str, ...],
+    cache: ResearchCache | None,
 ) -> str:
+    started = time.perf_counter()
     decision = control.before_fetch(url)
     if decision == "excluded":
         return _excluded_payload(url)
@@ -593,28 +667,72 @@ def _fetch(
     if not url or url.startswith(skip_prefixes):
         control.reject_source(url, "fetch skipped by policy")
         return _payload(ok=True, skipped=True, url=url)
-    try:
+    def load() -> Any:
         if gateway is None:
             value = fetcher.fetch(url)
         else:
             result = gateway.call(context, ToolCall(name="web_fetch", arguments={"url": url}))
             if result.status != ToolStatus.SUCCESS:
-                control.record_fetch(url, None, result.error or "fetch failed")
-                return _payload(ok=False, error=result.error or "fetch failed", url=url)
+                raise CacheLoadFailure(result.error or "fetch failed")
             value = result.value
+        if not isinstance(value, Mapping) or value.get("document") is None:
+            raise CacheLoadFailure("missing document")
+        try:
+            document = PageDocument.model_validate(value["document"])
+        except Exception as exc:
+            raise CacheLoadFailure("invalid document") from exc
+        if not _usable_content(document.content, control.policy.min_content_length):
+            raise CacheLoadFailure("content did not pass quality gate")
+        return value
+
+    cache_state = "disabled"
+    try:
+        if cache is not None:
+            can_read = cache.policy.can_read(context, "fetch")
+            can_write = cache.policy.can_write(context, "fetch")
+            cache_state = "miss" if can_read or can_write else "disabled"
+            with trace("research_cache_lookup", "tool", extra={"stage": "fetch"}) as cache_span:
+                lookup = cache.get_or_set(
+                    cache.fetch_key(context, url),
+                    load,
+                    ttl_seconds=cache.policy.ttl("fetch"),
+                    read_enabled=can_read,
+                    write_enabled=can_write,
+                    stale_if_error=cache.policy.stale_if_error,
+                )
+                cache_span.outputs = {"state": lookup.state}
+            cache_state = lookup.state
+            value = lookup.value
+        else:
+            value = load()
     except _RUN_CONTROL as exc:
         control.capture(exc)
         raise
+    except CacheLoadFailure as exc:
+        error = str(exc) or "fetch failed"
+        control.record_fetch(url, None, error)
+        _record_research("fetch", None, started, cache_state, "error", error, cache)
+        return _payload(ok=False, error=error, url=url)
     except Exception as exc:
         error = getattr(exc, "code", type(exc).__name__)
         control.record_fetch(url, None, str(error))
+        _record_research("fetch", None, started, cache_state, "error", str(error), cache)
         return _payload(ok=False, error=str(error), url=url)
-    if not isinstance(value, Mapping) or value.get("document") is None:
-        control.record_fetch(url, value, "missing document")
-        return _payload(ok=False, error="missing document", url=url)
     accepted = control.record_fetch(url, value)
     if not accepted:
+        _record_research(
+            "fetch", None, started, cache_state, "error", "quality_gate", cache
+        )
         return _payload(ok=False, error="content did not pass quality gate", url=url)
+    _record_research(
+        "fetch",
+        None,
+        started,
+        cache_state,
+        "fallback" if cache_state == "stale" else "success",
+        None,
+        cache,
+    )
     if control.should_stop_after_call():
         raise ResearchLoopStopped(control.stats.stop_reason or _TOOL_BUDGET_EXHAUSTED)
     return _payload(
@@ -638,6 +756,47 @@ def _duplicate_payload(argument: str, value: str, control: RunControl) -> str:
 
 def _excluded_payload(url: str) -> str:
     return _payload(ok=True, skipped=True, excluded=True, url=url)
+
+
+def _provider_cache_identity(provider: SearchProvider) -> str:
+    names = getattr(provider, "provider_names", None)
+    if isinstance(names, tuple) and names:
+        return "router:" + ",".join(str(name) for name in names)
+    name = getattr(provider, "name", type(provider).__name__)
+    return str(name)
+
+
+def _record_research(
+    stage: str,
+    provider: str | None,
+    started: float,
+    cache_state: str,
+    outcome: ResearchOutcome,
+    error_code: str | None,
+    cache: ResearchCache | None,
+) -> None:
+    if cache is not None and not cache.policy.observability_enabled:
+        return
+    record_research_event(
+        stage=stage,
+        provider=provider,
+        latency_ms=max(0, int((time.perf_counter() - started) * 1000)),
+        cache_state=cache_state,
+        outcome=outcome,
+        error_code=_telemetry_error_code(stage, error_code),
+    )
+
+
+def _telemetry_error_code(stage: str, error_code: str | None) -> str | None:
+    if error_code is None:
+        return None
+    known = {
+        "missing document": "missing_document",
+        "invalid document": "invalid_document",
+        "content did not pass quality gate": "quality_gate",
+        "quality_gate": "quality_gate",
+    }
+    return known.get(error_code, "provider_error" if stage == "search" else "fetch_error")
 
 
 def _normalize_query(value: str) -> str:

@@ -44,6 +44,22 @@ class Settings(BaseSettings):
     research_plan_max_concurrency: int = Field(default=3, ge=1)
     research_plan_repair_attempts: int = Field(default=1, ge=0, le=2)
     research_plan_allow_partial_results: bool = True
+    # Research cache rollout is fail-closed. Enable reads/writes explicitly,
+    # then increase the stable per-run percentage during a gray deployment.
+    research_cache_backend: str = "memory"
+    research_cache_redis_url: str = ""
+    research_cache_key_version: str = "research-cache-v1"
+    research_cache_read_enabled: bool = False
+    research_cache_write_enabled: bool = False
+    research_cache_fetch_enabled: bool = False
+    research_cache_stale_if_error: bool = True
+    research_cache_search_ttl_seconds: int = Field(default=300, ge=1)
+    research_cache_fetch_ttl_seconds: int = Field(default=900, ge=1)
+    research_cache_stale_grace_seconds: int = Field(default=60, ge=0)
+    research_cache_max_entries: int = Field(default=1_000, ge=1)
+    research_cache_max_value_bytes: int = Field(default=1_000_000, ge=1)
+    research_gray_percentage: int = Field(default=0, ge=0, le=100)
+    research_observability_enabled: bool = True
     web_fetch_connect_timeout_seconds: float = Field(default=5.0, gt=0)
     web_fetch_read_timeout_seconds: float = Field(default=15.0, gt=0)
     web_fetch_write_timeout_seconds: float = Field(default=5.0, gt=0)
@@ -102,6 +118,14 @@ class Settings(BaseSettings):
             item.strip().lower() for item in value.split(",") if item.strip()
         )
 
+    @field_validator("research_cache_backend")
+    @classmethod
+    def known_cache_backend(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in {"memory", "redis"}:
+            raise ValueError("research cache backend must be memory or redis")
+        return normalized
+
     @field_validator("log_file", mode="before")
     @classmethod
     def blank_log_file_is_unset(cls, value: object) -> object:
@@ -114,6 +138,14 @@ class Settings(BaseSettings):
             raise ValueError("EA_DEV_IDENTITY=true is not allowed in production")
         if self.environment == "production" and self.offline_mode:
             raise ValueError("EA_OFFLINE_MODE=true is not allowed in production")
+        if (
+            self.environment == "production"
+            and (self.research_cache_read_enabled or self.research_cache_write_enabled)
+            and self.research_cache_backend == "memory"
+        ):
+            raise ValueError("production research cache requires the redis backend")
+        if self.research_cache_backend == "redis" and not self.research_cache_redis_url.strip():
+            raise ValueError("redis research cache requires EA_RESEARCH_CACHE_REDIS_URL")
         self.artifact_root.mkdir(parents=True, exist_ok=True)
 
     @property

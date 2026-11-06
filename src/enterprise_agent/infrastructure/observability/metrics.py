@@ -19,6 +19,7 @@ from langchain_core.callbacks import BaseCallbackHandler
 from pydantic import ValidationError
 
 CallOutcome = Literal["success", "structured_output_failure", "error"]
+ResearchOutcome = Literal["success", "error", "fallback"]
 
 _INPUT_PRICE = "input_usd_per_million"
 _OUTPUT_PRICE = "output_usd_per_million"
@@ -48,14 +49,32 @@ class ModelCall:
     outcome: CallOutcome
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchObservation:
+    """Low-cardinality telemetry for one search/fetch/cache operation."""
+
+    stage: str
+    outcome: ResearchOutcome
+    provider: str | None
+    latency_ms: int
+    cache_state: str | None
+    error_code: str | None
+
+
 class RunMetrics:
     def __init__(self) -> None:
         self.calls: list[ModelCall] = []
+        self.research_events: list[ResearchObservation] = []
         self.fallbacks: list[str] = []
         self.retries = 0
 
     def add_call(self, call: ModelCall) -> None:
         self.calls.append(call)
+
+    def add_research_event(self, event: ResearchObservation) -> None:
+        # Keep run observations bounded even if a malformed caller loops.
+        if len(self.research_events) < 256:
+            self.research_events.append(event)
 
     def add_fallback(self, stage: str) -> None:
         self.fallbacks.append(stage)
@@ -68,6 +87,7 @@ class RunMetrics:
         structured = sum(1 for call in self.calls if call.outcome == "structured_output_failure")
         costs = [call.cost_usd for call in self.calls]
         cost: float | None = None if any(item is None for item in costs) else float(sum(item or 0 for item in costs))
+        research_events = [asdict(event) for event in self.research_events]
         return {
             "model_calls": model_calls,
             "structured_output_failures": structured,
@@ -80,6 +100,7 @@ class RunMetrics:
             "structured_output_failure_rate": _rate(structured, model_calls),
             "fallback_rate": _rate(len(self.fallbacks), model_calls),
             "calls": [asdict(call) for call in self.calls],
+            "research": _research_snapshot(self.research_events, research_events),
         }
 
 
@@ -178,6 +199,31 @@ def record_retry() -> None:
     metrics.add_retry()
 
 
+def record_research_event(
+    *,
+    stage: str,
+    outcome: ResearchOutcome,
+    provider: str | None = None,
+    latency_ms: int = 0,
+    cache_state: str | None = None,
+    error_code: str | None = None,
+) -> None:
+    """Record bounded, low-cardinality research telemetry for the active run."""
+    metrics = _METRICS.get()
+    if metrics is None:
+        return
+    metrics.add_research_event(
+        ResearchObservation(
+            stage=stage,
+            outcome=outcome,
+            provider=provider,
+            latency_ms=max(0, latency_ms),
+            cache_state=cache_state,
+            error_code=error_code,
+        )
+    )
+
+
 def call_outcome(exc: Exception, *, produced: bool) -> CallOutcome:
     """Classify a failed model step.
 
@@ -251,3 +297,32 @@ def _rate(part: int, whole: int) -> float:
     if whole == 0:
         return 0.0
     return part / whole
+
+
+def _research_snapshot(
+    events: Sequence[ResearchObservation], serialized: list[dict[str, object]]
+) -> dict[str, object]:
+    def count(*, stage: str | None = None, outcome: str | None = None) -> int:
+        return sum(
+            1
+            for event in events
+            if (stage is None or event.stage == stage)
+            and (outcome is None or event.outcome == outcome)
+        )
+
+    cache_hits = sum(1 for event in events if event.cache_state == "hit")
+    cache_misses = sum(1 for event in events if event.cache_state == "miss")
+    cache_stale = sum(1 for event in events if event.cache_state == "stale")
+    cache_errors = sum(1 for event in events if event.cache_state == "error")
+    return {
+        "search_requests": count(stage="search"),
+        "search_errors": count(stage="search", outcome="error"),
+        "fetch_requests": count(stage="fetch"),
+        "fetch_errors": count(stage="fetch", outcome="error"),
+        "cache_hits": cache_hits,
+        "cache_misses": cache_misses,
+        "cache_stale_fallbacks": cache_stale,
+        "cache_errors": cache_errors,
+        "total_latency_ms": sum(event.latency_ms for event in events),
+        "events": serialized,
+    }

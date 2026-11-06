@@ -90,7 +90,9 @@ def bind_claim_submission_tool(
         name=_TOOL_NAME,
         description=(
             "Submit structured analysis claims. Every supported or contradicted claim "
-            "must cite an exact quote from the supplied research evidence. "
+            "must cite an exact quote from the supplied research evidence and copy "
+            "document_id exactly from the evidence index; do not use a source title "
+            "as document_id. "
             "The server recomputes source counters and accepts at most two attempts."
         ),
         args_schema=_SubmitClaimsArgs,

@@ -6,6 +6,7 @@ from enterprise_agent.agents.research.schemas import ResearchRequest
 from enterprise_agent.agents.research.tools import ResearchLoopPolicy
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import AgentResult
+from enterprise_agent.infrastructure.cache.research import ResearchCache
 from enterprise_agent.infrastructure.observability.tracing import trace
 from enterprise_agent.tools.gateway import ToolGateway
 from enterprise_agent.tools.web.fetch import WebFetcher
@@ -29,6 +30,7 @@ class ResearchAgent:
         gateway: ToolGateway | None = None,
         skip_fetch_prefixes: tuple[str, ...] = (),
         loop_policy: ResearchLoopPolicy | None = None,
+        cache: ResearchCache | None = None,
     ) -> None:
         self.provider = provider
         self.fetcher = fetcher
@@ -37,6 +39,7 @@ class ResearchAgent:
         self.gateway = gateway
         self.skip_fetch_prefixes = tuple(skip_fetch_prefixes)
         self.loop_policy = loop_policy or ResearchLoopPolicy()
+        self.cache = cache
         self.core = ResearchCore(
             provider,
             fetcher,
@@ -44,6 +47,7 @@ class ResearchAgent:
             allow_fetch=allow_fetch,
             skip_fetch_prefixes=self.skip_fetch_prefixes,
             loop_policy=self.loop_policy,
+            cache=self.cache,
         )
 
     def run(

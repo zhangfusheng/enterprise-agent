@@ -26,6 +26,7 @@ from enterprise_agent.agents.research.schemas import (
 from enterprise_agent.agents.research.tools import ResearchLoopPolicy, RunControl
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.results import AgentResult, ResultStatus
+from enterprise_agent.infrastructure.cache.research import ResearchCache
 from enterprise_agent.runtime.cancellation import CancellationRequested
 from enterprise_agent.tools.gateway import ToolDenied, ToolGateway
 from enterprise_agent.tools.web.fetch import WebFetcher
@@ -50,6 +51,7 @@ class ResearchCore:
         allow_fetch: bool = True,
         skip_fetch_prefixes: tuple[str, ...] = (),
         loop_policy: ResearchLoopPolicy | None = None,
+        cache: ResearchCache | None = None,
     ) -> None:
         self.provider = provider
         self.fetcher = fetcher
@@ -57,6 +59,7 @@ class ResearchCore:
         self.allow_fetch = allow_fetch
         self.skip_fetch_prefixes = tuple(skip_fetch_prefixes)
         self.loop_policy = loop_policy or ResearchLoopPolicy()
+        self.cache = cache
 
     def run(
         self,
@@ -86,6 +89,7 @@ class ResearchCore:
             allow_fetch=self.allow_fetch,
             skip_fetch_prefixes=self.skip_fetch_prefixes,
             loop_policy=self.loop_policy,
+            cache=self.cache,
         )
         try:
             execution = executor.run(plan, request, context, gateway=gateway)

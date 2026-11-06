@@ -121,6 +121,27 @@ class EvidenceIndex:
     def get(self, document_id: str) -> EvidenceIndexEntry | None:
         return self._by_document_id.get(document_id)
 
+    def resolve_document_id(self, reference: str) -> str | None:
+        """Resolve an exact document ID, with a unique-title compatibility alias.
+
+        ``document_id`` is the canonical citation identity.  The title fallback
+        exists for older model outputs that copied the displayed title into the
+        document_id field.  It is deliberately exact and only accepts a unique
+        title, so ambiguous or approximate references still fail closed.
+        """
+
+        normalized = reference.strip()
+        if not normalized:
+            return None
+        if normalized in self._by_document_id:
+            return normalized
+        matches = [
+            entry.document.document_id
+            for entry in self._entries
+            if entry.document.title and entry.document.title == normalized
+        ]
+        return matches[0] if len(matches) == 1 else None
+
     def resolve_url(self, url: str) -> EvidenceIndexEntry | None:
         return self._by_url.get(normalize_source_url(url))
 
@@ -175,9 +196,10 @@ class EvidencePackValidator:
                     _issue("empty_claim", "claim text must not be blank", claim.claim_id)
                 )
             valid_entries: list[EvidenceIndexEntry] = []
+            valid_citations: list[EvidenceCitation] = []
             citation_count += len(claim.citations)
             for citation_index, citation in enumerate(claim.citations):
-                entry = self._validate_citation(
+                entry, normalized_citation = self._validate_citation(
                     claim.claim_id,
                     citation_index,
                     citation,
@@ -185,6 +207,7 @@ class EvidencePackValidator:
                 )
                 if entry is not None:
                     valid_entries.append(entry)
+                    valid_citations.append(normalized_citation)
                     valid_citation_count += 1
 
             if claim.support_status.value in {"supported", "contradicted"} and not valid_entries:
@@ -210,7 +233,7 @@ class EvidencePackValidator:
             validated.append(
                 claim.model_copy(
                     update={
-                        "citations": list(claim.citations),
+                        "citations": valid_citations,
                         "source_count": len(claim_source_ids),
                         "independent_domain_count": len(claim_domains),
                     }
@@ -266,8 +289,9 @@ class EvidencePackValidator:
         citation_index: int,
         citation: EvidenceCitation,
         issues: list[EvidenceValidationIssue],
-    ) -> EvidenceIndexEntry | None:
-        entry = self.index.get(citation.document_id)
+    ) -> tuple[EvidenceIndexEntry | None, EvidenceCitation]:
+        resolved_document_id = self.index.resolve_document_id(citation.document_id)
+        entry = self.index.get(resolved_document_id) if resolved_document_id else None
         if entry is None:
             issues.append(
                 _issue(
@@ -277,7 +301,12 @@ class EvidencePackValidator:
                     citation_index,
                 )
             )
-            return None
+            return None, citation
+        normalized_citation = citation
+        if citation.document_id != entry.document.document_id:
+            normalized_citation = citation.model_copy(
+                update={"document_id": entry.document.document_id}
+            )
         if not entry.eligible_for_citation:
             issues.append(
                 _issue(
@@ -287,7 +316,7 @@ class EvidencePackValidator:
                     citation_index,
                 )
             )
-            return None
+            return None, normalized_citation
         if normalize_source_url(citation.url) not in entry.normalized_urls:
             issues.append(
                 _issue(
@@ -297,7 +326,7 @@ class EvidencePackValidator:
                     citation_index,
                 )
             )
-            return None
+            return None, normalized_citation
         quote = citation.quote
         if len(quote) > _MAX_QUOTE_CHARS:
             issues.append(
@@ -308,7 +337,7 @@ class EvidencePackValidator:
                     citation_index,
                 )
             )
-            return None
+            return None, normalized_citation
         if quote not in entry.document.content:
             issues.append(
                 _issue(
@@ -318,7 +347,7 @@ class EvidencePackValidator:
                     citation_index,
                 )
             )
-            return None
+            return None, normalized_citation
         if citation.locator is not None and not _locator_matches(citation, entry.document):
             issues.append(
                 _issue(
@@ -328,8 +357,8 @@ class EvidencePackValidator:
                     citation_index,
                 )
             )
-            return None
-        return entry
+            return None, normalized_citation
+        return entry, normalized_citation
 
 
 def independent_domain_key(url: str) -> str:

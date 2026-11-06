@@ -10615,3 +10615,417 @@ During task with name 'execute' and id 'ca36f527-3733-5640-dc8b-ae195700eb10'
 2026-11-06 17:06:16,548 INFO enterprise_agent.orchestration node=replan model_version=none prompt_version=none run_id=run_30bea9241c8a4f31b4c6 replan_count=2
 2026-11-06 17:06:31,181 INFO enterprise_agent.orchestration node=plan model_version=doubao-seed-2-1-pro-260915 prompt_version=plan-draft-v1 run_id=run_30bea9241c8a4f31b4c6 plan_version=3 task_count=2 planner=llm task_mapping={'task_research_agent_sources': 'task_research_agent_sources', 'task_analyze_agent_updates': 'task_analyze_agent_updates'} task_actions={'task_research_agent_sources': 'repaired', 'task_analyze_agent_updates': 'repaired'} retired_task_ids=none
 2026-11-06 17:07:08,223 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_30bea9241c8a4f31b4c6 task_id=task_research_agent_sources task_status=SUCCEEDED attempts=2 result_status=PARTIAL recovery_action=PROCEED
+2026-11-06 17:08:30,886 INFO uvicorn.access 127.0.0.1:57906 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:08:30,912 INFO uvicorn.access 127.0.0.1:57900 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:32,965 INFO uvicorn.access 127.0.0.1:57916 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:35,011 INFO uvicorn.access 127.0.0.1:57926 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:37,063 INFO uvicorn.access 127.0.0.1:56696 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:39,104 INFO uvicorn.access 127.0.0.1:56710 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:40,909 INFO uvicorn.access 127.0.0.1:56722 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:08:41,158 INFO uvicorn.access 127.0.0.1:56728 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:43,218 INFO uvicorn.access 127.0.0.1:56736 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:45,269 INFO uvicorn.access 127.0.0.1:46366 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:47,323 INFO uvicorn.access 127.0.0.1:46380 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:49,374 INFO uvicorn.access 127.0.0.1:46388 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:50,933 INFO uvicorn.access 127.0.0.1:46402 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:08:51,424 INFO uvicorn.access 127.0.0.1:46412 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:53,471 INFO uvicorn.access 127.0.0.1:46426 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:55,509 INFO uvicorn.access 127.0.0.1:51766 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:57,562 INFO uvicorn.access 127.0.0.1:51778 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:08:59,614 INFO uvicorn.access 127.0.0.1:51790 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:00,958 INFO uvicorn.access 127.0.0.1:51796 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:09:01,662 INFO uvicorn.access 127.0.0.1:51810 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:03,725 INFO uvicorn.access 127.0.0.1:51822 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:05,780 INFO uvicorn.access 127.0.0.1:45032 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:07,816 INFO uvicorn.access 127.0.0.1:45046 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:09,883 INFO uvicorn.access 127.0.0.1:45060 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:10,973 INFO uvicorn.access 127.0.0.1:45072 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:09:11,947 INFO uvicorn.access 127.0.0.1:45086 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:14,017 INFO uvicorn.access 127.0.0.1:45088 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:14,069 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_30bea9241c8a4f31b4c6 task_id=task_analyze_agent_updates task_status=FAILED attempts=1 result_status=FAILED recovery_action=RETRY
+2026-11-06 17:09:14,129 INFO enterprise_agent.orchestration node=accept model_version=none prompt_version=none run_id=run_30bea9241c8a4f31b4c6 status=PARTIAL
+2026-11-06 17:09:14,373 INFO enterprise_agent.orchestration node=metrics model_version=none prompt_version=none run_id=run_30bea9241c8a4f31b4c6 model_calls=8 structured_output_failures=0 fallbacks=0 retries=2 input_tokens=30752 output_tokens=6748 latency_ms=222859 cost_usd=none
+2026-11-06 17:09:16,122 INFO uvicorn.access 127.0.0.1:59236 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/trace HTTP/1.1" 200
+2026-11-06 17:09:20,995 INFO uvicorn.access 127.0.0.1:59240 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:09:31,012 INFO uvicorn.access 127.0.0.1:42532 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:09:31,934 INFO uvicorn.access 127.0.0.1:42558 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/events?after=0 HTTP/1.1" 200
+2026-11-06 17:09:31,971 INFO uvicorn.access 127.0.0.1:42546 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6 HTTP/1.1" 200
+2026-11-06 17:09:32,303 INFO uvicorn.access 127.0.0.1:42568 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6 HTTP/1.1" 200
+2026-11-06 17:09:32,957 INFO uvicorn.access 127.0.0.1:42600 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:33,081 INFO uvicorn.access 127.0.0.1:42590 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-06 17:09:35,983 INFO uvicorn.access 127.0.0.1:60512 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:39,004 INFO uvicorn.access 127.0.0.1:60526 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:41,031 INFO uvicorn.access 127.0.0.1:60542 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:09:42,020 INFO uvicorn.access 127.0.0.1:60556 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:45,041 INFO uvicorn.access 127.0.0.1:60564 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:48,055 INFO uvicorn.access 127.0.0.1:34324 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:51,053 INFO uvicorn.access 127.0.0.1:34338 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:09:51,070 INFO uvicorn.access 127.0.0.1:34342 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:54,090 INFO uvicorn.access 127.0.0.1:34344 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:09:57,109 INFO uvicorn.access 127.0.0.1:60972 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:10:00,132 INFO uvicorn.access 127.0.0.1:60978 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:10:01,071 INFO uvicorn.access 127.0.0.1:60982 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:10:03,149 INFO uvicorn.access 127.0.0.1:60986 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:11:57,805 INFO uvicorn.access 127.0.0.1:39644 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6 HTTP/1.1" 200
+2026-11-06 17:11:57,822 INFO uvicorn.access 127.0.0.1:39630 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:11:57,833 INFO uvicorn.access 127.0.0.1:39664 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:11:57,886 INFO uvicorn.access 127.0.0.1:39652 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-06 17:12:03,076 INFO uvicorn.access 127.0.0.1:39678 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:12:03,081 INFO uvicorn.access 127.0.0.1:39682 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6 HTTP/1.1" 200
+2026-11-06 17:12:03,090 INFO uvicorn.access 127.0.0.1:39696 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:16:20,818 INFO uvicorn.error Shutting down
+2026-11-06 17:16:20,818 INFO uvicorn.error Shutting down
+2026-11-06 17:16:20,929 INFO uvicorn.error Waiting for application shutdown.
+2026-11-06 17:16:20,929 INFO uvicorn.error Waiting for application shutdown.
+2026-11-06 17:16:20,941 INFO uvicorn.error Application shutdown complete.
+2026-11-06 17:16:20,941 INFO uvicorn.error Application shutdown complete.
+2026-11-06 17:16:20,942 INFO uvicorn.error Finished server process [69288]
+2026-11-06 17:16:20,942 INFO uvicorn.error Finished server process [69288]
+2026-11-06 17:16:32,264 INFO uvicorn.error Application startup complete.
+2026-11-06 17:16:32,264 INFO uvicorn.error Application startup complete.
+2026-11-06 17:16:53,066 INFO uvicorn.error Shutting down
+2026-11-06 17:16:53,066 INFO uvicorn.error Shutting down
+2026-11-06 17:16:53,167 INFO uvicorn.error Waiting for application shutdown.
+2026-11-06 17:16:53,167 INFO uvicorn.error Waiting for application shutdown.
+2026-11-06 17:16:53,168 INFO uvicorn.error Application shutdown complete.
+2026-11-06 17:16:53,168 INFO uvicorn.error Application shutdown complete.
+2026-11-06 17:16:53,169 INFO uvicorn.error Finished server process [74440]
+2026-11-06 17:16:53,169 INFO uvicorn.error Finished server process [74440]
+2026-11-06 17:17:02,633 INFO uvicorn.error Application startup complete.
+2026-11-06 17:17:02,633 INFO uvicorn.error Application startup complete.
+2026-11-06 17:23:28,777 INFO uvicorn.access 127.0.0.1:53328 - "GET /api/v1/sessions/session_a322121f476c443b99f9 HTTP/1.1" 200
+2026-11-06 17:23:28,788 INFO uvicorn.access 127.0.0.1:53338 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:23:28,844 INFO uvicorn.access 127.0.0.1:53350 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6 HTTP/1.1" 200
+2026-11-06 17:23:28,885 INFO uvicorn.access 127.0.0.1:53316 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-06 17:23:30,220 INFO uvicorn.access 127.0.0.1:53372 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6 HTTP/1.1" 200
+2026-11-06 17:23:30,236 INFO uvicorn.access 127.0.0.1:53388 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6/events?after=0 HTTP/1.1" 200
+2026-11-06 17:23:30,279 INFO uvicorn.access 127.0.0.1:53368 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:23:30,613 INFO uvicorn.access 127.0.0.1:53404 - "GET /api/v1/runs/run_30bea9241c8a4f31b4c6 HTTP/1.1" 200
+2026-11-06 17:23:31,705 INFO uvicorn.access 127.0.0.1:53420 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-06 17:23:40,330 INFO uvicorn.access 127.0.0.1:52336 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:23:44,570 INFO uvicorn.access 127.0.0.1:52352 - "POST /api/v1/runs HTTP/1.1" 202
+2026-11-06 17:23:44,593 INFO uvicorn.access 127.0.0.1:52364 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:23:44,662 INFO uvicorn.access 127.0.0.1:52382 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f HTTP/1.1" 200
+2026-11-06 17:23:44,667 INFO uvicorn.access 127.0.0.1:52398 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/events?after=0 HTTP/1.1" 200
+2026-11-06 17:23:47,183 INFO uvicorn.access 127.0.0.1:33888 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f HTTP/1.1" 200
+2026-11-06 17:23:49,704 INFO uvicorn.access 127.0.0.1:33890 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f HTTP/1.1" 200
+2026-11-06 17:23:51,016 INFO enterprise_agent.orchestration node=parse_route model_version=doubao-seed-2-1-pro-260915 prompt_version=goal-parser-v2 run_id=run_6c84ff162e1342c8ad9f route=multi rationale=目标同时需要外部证据和分析/交付，拆为有依赖的 Research→Analysis 任务。 external_network_allowed=True network_mode=external parser=llm goal_ids=search-latest-agent-info input_chars=12
+2026-11-06 17:23:52,044 INFO uvicorn.access 127.0.0.1:33920 - "GET /api/v1/traces?limit=30 HTTP/1.1" 200
+2026-11-06 17:23:53,218 INFO uvicorn.access 127.0.0.1:33932 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:23:54,610 INFO uvicorn.access 127.0.0.1:33938 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:23:55,244 INFO uvicorn.access 127.0.0.1:58034 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:23:57,264 INFO uvicorn.access 127.0.0.1:58046 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:23:59,292 INFO uvicorn.access 127.0.0.1:58056 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:01,326 INFO uvicorn.access 127.0.0.1:58068 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:03,352 INFO uvicorn.access 127.0.0.1:58076 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:04,642 INFO uvicorn.access 127.0.0.1:58092 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:24:05,380 INFO uvicorn.access 127.0.0.1:32954 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:05,756 INFO enterprise_agent.orchestration node=plan model_version=doubao-seed-2-1-pro-260915 prompt_version=plan-draft-v1 run_id=run_6c84ff162e1342c8ad9f plan_version=1 task_count=2 planner=llm task_mapping={} task_actions={'task_research_agent_latest_info': 'new', 'task_analyze_agent_recent_progress': 'new'} retired_task_ids=none
+2026-11-06 17:24:07,418 INFO uvicorn.access 127.0.0.1:32958 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:09,443 INFO uvicorn.access 127.0.0.1:32964 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:11,469 INFO uvicorn.access 127.0.0.1:32972 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:13,503 INFO uvicorn.access 127.0.0.1:32982 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:14,671 INFO uvicorn.access 127.0.0.1:32984 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:24:15,534 INFO uvicorn.access 127.0.0.1:53912 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:17,560 INFO uvicorn.access 127.0.0.1:53926 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:19,588 INFO uvicorn.access 127.0.0.1:53932 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:21,607 INFO uvicorn.access 127.0.0.1:53946 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:23,632 INFO uvicorn.access 127.0.0.1:53962 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:24,699 INFO uvicorn.access 127.0.0.1:53964 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:24:25,661 INFO uvicorn.access 127.0.0.1:46960 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:27,695 INFO uvicorn.access 127.0.0.1:46962 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:29,729 INFO uvicorn.access 127.0.0.1:46964 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:31,762 INFO uvicorn.access 127.0.0.1:46974 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:33,789 INFO uvicorn.access 127.0.0.1:46978 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:34,730 INFO uvicorn.access 127.0.0.1:46984 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:24:35,821 INFO uvicorn.access 127.0.0.1:52862 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:37,265 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f task_id=task_research_agent_latest_info task_status=SUCCEEDED attempts=1 result_status=SUCCESS recovery_action=PROCEED
+2026-11-06 17:24:37,857 INFO uvicorn.access 127.0.0.1:52874 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:39,889 INFO uvicorn.access 127.0.0.1:52882 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:41,923 INFO uvicorn.access 127.0.0.1:52886 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:43,959 INFO uvicorn.access 127.0.0.1:52896 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:44,757 INFO uvicorn.access 127.0.0.1:52900 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:24:45,993 INFO uvicorn.access 127.0.0.1:51072 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:48,033 INFO uvicorn.access 127.0.0.1:51076 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:50,067 INFO uvicorn.access 127.0.0.1:51084 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:52,106 INFO uvicorn.access 127.0.0.1:51090 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:54,140 INFO uvicorn.access 127.0.0.1:51092 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:54,788 INFO uvicorn.access 127.0.0.1:51106 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:24:56,177 INFO uvicorn.access 127.0.0.1:44248 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:24:58,216 INFO uvicorn.access 127.0.0.1:44250 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:00,252 INFO uvicorn.access 127.0.0.1:44254 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:02,288 INFO uvicorn.access 127.0.0.1:44258 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:04,335 INFO uvicorn.access 127.0.0.1:44274 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:04,814 INFO uvicorn.access 127.0.0.1:44286 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:25:06,377 INFO uvicorn.access 127.0.0.1:57664 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:08,430 INFO uvicorn.access 127.0.0.1:57678 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:10,488 INFO uvicorn.access 127.0.0.1:57686 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:12,530 INFO uvicorn.access 127.0.0.1:57696 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:14,592 INFO uvicorn.access 127.0.0.1:57708 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:14,844 INFO uvicorn.access 127.0.0.1:57722 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:25:16,640 INFO uvicorn.access 127.0.0.1:57122 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:18,683 INFO uvicorn.access 127.0.0.1:57132 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:20,732 INFO uvicorn.access 127.0.0.1:57148 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:22,777 INFO uvicorn.access 127.0.0.1:57158 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:24,826 INFO uvicorn.access 127.0.0.1:57160 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:24,871 INFO uvicorn.access 127.0.0.1:57172 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:25:26,883 INFO uvicorn.access 127.0.0.1:40004 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:28,947 INFO uvicorn.access 127.0.0.1:40010 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:31,005 INFO uvicorn.access 127.0.0.1:40020 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:33,058 INFO uvicorn.access 127.0.0.1:40030 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:34,901 INFO uvicorn.access 127.0.0.1:40036 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:25:35,107 INFO uvicorn.access 127.0.0.1:40038 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:37,157 INFO uvicorn.access 127.0.0.1:49418 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:39,216 INFO uvicorn.access 127.0.0.1:49428 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:41,269 INFO uvicorn.access 127.0.0.1:49434 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:43,325 INFO uvicorn.access 127.0.0.1:49440 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:44,932 INFO uvicorn.access 127.0.0.1:49444 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:25:45,374 INFO uvicorn.access 127.0.0.1:37584 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:47,427 INFO uvicorn.access 127.0.0.1:37598 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:49,480 INFO uvicorn.access 127.0.0.1:37612 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:51,523 INFO uvicorn.access 127.0.0.1:37620 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:53,567 INFO uvicorn.access 127.0.0.1:37634 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:54,961 INFO uvicorn.access 127.0.0.1:37640 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:25:55,620 INFO uvicorn.access 127.0.0.1:47194 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:57,679 INFO uvicorn.access 127.0.0.1:47202 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:25:59,742 INFO uvicorn.access 127.0.0.1:47216 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:01,325 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f task_id=task_analyze_agent_recent_progress task_status=FAILED attempts=1 result_status=FAILED recovery_action=RETRY
+2026-11-06 17:26:01,500 INFO enterprise_agent.orchestration node=replan model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f replan_count=1
+2026-11-06 17:26:01,821 INFO uvicorn.access 127.0.0.1:47232 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:03,879 INFO uvicorn.access 127.0.0.1:47236 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:04,990 INFO uvicorn.access 127.0.0.1:47244 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:26:05,938 INFO uvicorn.access 127.0.0.1:42912 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:07,994 INFO uvicorn.access 127.0.0.1:42918 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:10,085 INFO uvicorn.access 127.0.0.1:42928 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:12,195 INFO uvicorn.access 127.0.0.1:42944 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:14,242 INFO uvicorn.access 127.0.0.1:42952 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:15,031 INFO uvicorn.access 127.0.0.1:42966 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:26:16,321 INFO uvicorn.access 127.0.0.1:57742 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:18,386 INFO uvicorn.access 127.0.0.1:57744 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:20,508 INFO uvicorn.access 127.0.0.1:57756 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:22,579 INFO uvicorn.access 127.0.0.1:57758 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:23,771 INFO enterprise_agent.orchestration node=plan model_version=doubao-seed-2-1-pro-260915 prompt_version=plan-draft-v1 run_id=run_6c84ff162e1342c8ad9f plan_version=2 task_count=2 planner=llm task_mapping={'task_research_agent_latest_info': 'task_research_agent_latest_info'} task_actions={'task_research_agent_latest_info': 'repaired', 'task_analyze_agent_latest_info': 'new'} retired_task_ids=task_analyze_agent_recent_progress
+2026-11-06 17:26:24,625 INFO uvicorn.access 127.0.0.1:57774 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:25,054 INFO uvicorn.access 127.0.0.1:57782 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:26:26,672 INFO uvicorn.access 127.0.0.1:49816 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:28,722 INFO uvicorn.access 127.0.0.1:49822 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:30,769 INFO uvicorn.access 127.0.0.1:49826 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:32,828 INFO uvicorn.access 127.0.0.1:49840 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:34,898 INFO uvicorn.access 127.0.0.1:49846 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:35,085 INFO uvicorn.access 127.0.0.1:49856 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:26:36,985 INFO uvicorn.access 127.0.0.1:58442 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:39,082 INFO uvicorn.access 127.0.0.1:58450 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:40,405 INFO uvicorn.access 127.0.0.1:58462 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:26:41,159 INFO uvicorn.access 127.0.0.1:58470 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:43,209 INFO uvicorn.access 127.0.0.1:58484 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:45,267 INFO uvicorn.access 127.0.0.1:55690 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:52,530 INFO uvicorn.access 127.0.0.1:55692 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:26:52,583 INFO uvicorn.access 127.0.0.1:55694 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:54,644 INFO uvicorn.access 127.0.0.1:55698 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:56,718 INFO uvicorn.access 127.0.0.1:36450 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:26:58,775 INFO uvicorn.access 127.0.0.1:36452 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:00,838 INFO uvicorn.access 127.0.0.1:36462 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:02,561 INFO uvicorn.access 127.0.0.1:36468 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:27:02,884 INFO uvicorn.access 127.0.0.1:36484 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:04,948 INFO uvicorn.access 127.0.0.1:36488 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:07,000 INFO uvicorn.access 127.0.0.1:36546 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:09,050 INFO uvicorn.access 127.0.0.1:36550 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:11,101 INFO uvicorn.access 127.0.0.1:36562 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:12,583 INFO uvicorn.access 127.0.0.1:36578 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:27:13,161 INFO uvicorn.access 127.0.0.1:36588 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:15,224 INFO uvicorn.access 127.0.0.1:36712 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:17,282 INFO uvicorn.access 127.0.0.1:36726 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:19,335 INFO uvicorn.access 127.0.0.1:36734 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:21,382 INFO uvicorn.access 127.0.0.1:36746 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:22,611 INFO uvicorn.access 127.0.0.1:36760 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:27:23,445 INFO uvicorn.access 127.0.0.1:36776 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:24,149 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f task_id=task_research_agent_latest_info task_status=SUCCEEDED attempts=2 result_status=PARTIAL recovery_action=PROCEED
+2026-11-06 17:27:25,508 INFO uvicorn.access 127.0.0.1:48446 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:27,568 INFO uvicorn.access 127.0.0.1:48452 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:29,630 INFO uvicorn.access 127.0.0.1:48462 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:31,704 INFO uvicorn.access 127.0.0.1:48474 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:32,640 INFO uvicorn.access 127.0.0.1:48490 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:27:33,771 INFO uvicorn.access 127.0.0.1:48494 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:35,856 INFO uvicorn.access 127.0.0.1:60086 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:37,936 INFO uvicorn.access 127.0.0.1:60100 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:40,007 INFO uvicorn.access 127.0.0.1:60112 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:42,071 INFO uvicorn.access 127.0.0.1:60120 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:42,673 INFO uvicorn.access 127.0.0.1:60136 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:27:44,164 INFO uvicorn.access 127.0.0.1:60138 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:46,238 INFO uvicorn.access 127.0.0.1:46352 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:48,321 INFO uvicorn.access 127.0.0.1:46366 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:50,398 INFO uvicorn.access 127.0.0.1:46368 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:52,476 INFO uvicorn.access 127.0.0.1:46378 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:52,701 INFO uvicorn.access 127.0.0.1:46386 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:27:54,550 INFO uvicorn.access 127.0.0.1:46402 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:56,634 INFO uvicorn.access 127.0.0.1:43032 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:27:58,716 INFO uvicorn.access 127.0.0.1:43038 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:00,792 INFO uvicorn.access 127.0.0.1:43042 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:02,731 INFO uvicorn.access 127.0.0.1:43048 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:28:02,889 INFO uvicorn.access 127.0.0.1:43060 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:04,977 INFO uvicorn.access 127.0.0.1:43072 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:07,048 INFO uvicorn.access 127.0.0.1:42094 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:09,691 INFO uvicorn.access 127.0.0.1:42106 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:11,777 INFO uvicorn.access 127.0.0.1:42120 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:12,760 INFO uvicorn.access 127.0.0.1:42132 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:28:13,861 INFO uvicorn.access 127.0.0.1:42134 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:15,959 INFO uvicorn.access 127.0.0.1:34094 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:18,048 INFO uvicorn.access 127.0.0.1:34110 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:20,131 INFO uvicorn.access 127.0.0.1:34116 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:22,216 INFO uvicorn.access 127.0.0.1:34128 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:22,790 INFO uvicorn.access 127.0.0.1:34144 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:28:24,311 INFO uvicorn.access 127.0.0.1:34146 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:26,384 INFO uvicorn.access 127.0.0.1:38200 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:28,460 INFO uvicorn.access 127.0.0.1:38216 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:30,534 INFO uvicorn.access 127.0.0.1:38220 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:32,610 INFO uvicorn.access 127.0.0.1:38232 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:32,829 INFO uvicorn.access 127.0.0.1:38246 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:28:34,691 INFO uvicorn.access 127.0.0.1:38258 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:36,760 INFO uvicorn.access 127.0.0.1:39216 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:38,836 INFO uvicorn.access 127.0.0.1:39220 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:40,921 INFO uvicorn.access 127.0.0.1:39230 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:42,859 INFO uvicorn.access 127.0.0.1:39240 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:28:42,990 INFO uvicorn.access 127.0.0.1:39254 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:45,059 INFO uvicorn.access 127.0.0.1:39266 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:47,137 INFO uvicorn.access 127.0.0.1:35218 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:49,209 INFO uvicorn.access 127.0.0.1:35234 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:51,291 INFO uvicorn.access 127.0.0.1:35242 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:52,894 INFO uvicorn.access 127.0.0.1:35254 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:28:53,377 INFO uvicorn.access 127.0.0.1:35262 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:55,466 INFO uvicorn.access 127.0.0.1:40452 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:57,537 INFO uvicorn.access 127.0.0.1:40466 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:28:59,622 INFO uvicorn.access 127.0.0.1:40470 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:01,704 INFO uvicorn.access 127.0.0.1:40476 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:02,924 INFO uvicorn.access 127.0.0.1:40488 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:29:03,667 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f task_id=task_analyze_agent_latest_info task_status=FAILED attempts=1 result_status=FAILED recovery_action=RETRY
+2026-11-06 17:29:03,723 INFO enterprise_agent.orchestration node=replan model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f replan_count=2
+2026-11-06 17:29:03,795 INFO uvicorn.access 127.0.0.1:40500 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:05,880 INFO uvicorn.access 127.0.0.1:51910 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:08,010 INFO uvicorn.access 127.0.0.1:51918 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:10,116 INFO uvicorn.access 127.0.0.1:51930 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:12,196 INFO uvicorn.access 127.0.0.1:51942 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:12,955 INFO uvicorn.access 127.0.0.1:51946 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:29:14,270 INFO uvicorn.access 127.0.0.1:51950 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:14,826 INFO enterprise_agent.orchestration node=plan model_version=doubao-seed-2-1-pro-260915 prompt_version=plan-draft-v1 run_id=run_6c84ff162e1342c8ad9f plan_version=3 task_count=2 planner=llm task_mapping={'task_research_agent_latest_info': 'task_research_agent_latest_info', 'task_analyze_agent_latest_info': 'task_analyze_agent_latest_info'} task_actions={'task_research_agent_latest_info': 'repaired', 'task_analyze_agent_latest_info': 'repaired'} retired_task_ids=none
+2026-11-06 17:29:16,348 INFO uvicorn.access 127.0.0.1:47996 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:18,431 INFO uvicorn.access 127.0.0.1:48012 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:20,519 INFO uvicorn.access 127.0.0.1:48014 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:22,610 INFO uvicorn.access 127.0.0.1:48026 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:22,979 INFO uvicorn.access 127.0.0.1:48030 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:29:24,709 INFO uvicorn.access 127.0.0.1:48036 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:26,781 INFO uvicorn.access 127.0.0.1:49800 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:28,861 INFO uvicorn.access 127.0.0.1:49810 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:30,946 INFO uvicorn.access 127.0.0.1:49816 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:33,048 INFO uvicorn.access 127.0.0.1:49820 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:33,066 INFO uvicorn.access 127.0.0.1:49830 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:29:35,143 INFO uvicorn.access 127.0.0.1:49834 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:37,208 INFO uvicorn.access 127.0.0.1:44730 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:39,294 INFO uvicorn.access 127.0.0.1:44742 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:41,383 INFO uvicorn.access 127.0.0.1:44758 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:43,119 INFO uvicorn.access 127.0.0.1:44772 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:29:43,460 INFO uvicorn.access 127.0.0.1:44778 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:45,549 INFO uvicorn.access 127.0.0.1:45292 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:47,647 INFO uvicorn.access 127.0.0.1:45306 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:49,717 INFO uvicorn.access 127.0.0.1:45320 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:51,805 INFO uvicorn.access 127.0.0.1:45326 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:53,136 INFO uvicorn.access 127.0.0.1:45336 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:29:53,883 INFO uvicorn.access 127.0.0.1:45346 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:55,986 INFO uvicorn.access 127.0.0.1:41732 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:29:58,060 INFO uvicorn.access 127.0.0.1:41746 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:00,179 INFO uvicorn.access 127.0.0.1:41760 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:02,288 INFO uvicorn.access 127.0.0.1:41772 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:03,153 INFO uvicorn.access 127.0.0.1:41788 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:30:04,387 INFO uvicorn.access 127.0.0.1:41802 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:06,480 INFO uvicorn.access 127.0.0.1:37372 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:08,572 INFO uvicorn.access 127.0.0.1:37380 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:10,639 INFO uvicorn.access 127.0.0.1:37384 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:12,719 INFO uvicorn.access 127.0.0.1:37386 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:13,177 INFO uvicorn.access 127.0.0.1:37400 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:30:14,793 INFO uvicorn.access 127.0.0.1:37410 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:16,873 INFO uvicorn.access 127.0.0.1:36386 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:18,966 INFO uvicorn.access 127.0.0.1:36390 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:21,213 INFO uvicorn.access 127.0.0.1:36396 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:23,199 INFO uvicorn.access 127.0.0.1:36404 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:30:23,304 INFO uvicorn.access 127.0.0.1:36414 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:25,371 INFO uvicorn.access 127.0.0.1:41070 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:27,475 INFO uvicorn.access 127.0.0.1:41080 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:29,563 INFO uvicorn.access 127.0.0.1:41096 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:31,633 INFO uvicorn.access 127.0.0.1:41106 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:33,226 INFO uvicorn.access 127.0.0.1:41118 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:30:33,716 INFO uvicorn.access 127.0.0.1:41126 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:35,808 INFO uvicorn.access 127.0.0.1:60650 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:37,890 INFO uvicorn.access 127.0.0.1:60662 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:39,957 INFO uvicorn.access 127.0.0.1:60678 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:42,052 INFO uvicorn.access 127.0.0.1:60682 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:43,252 INFO uvicorn.access 127.0.0.1:60690 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:30:44,132 INFO uvicorn.access 127.0.0.1:60704 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:46,224 INFO uvicorn.access 127.0.0.1:41134 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:48,313 INFO uvicorn.access 127.0.0.1:41138 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:50,389 INFO uvicorn.access 127.0.0.1:41140 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:52,468 INFO uvicorn.access 127.0.0.1:41148 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:53,272 INFO uvicorn.access 127.0.0.1:41164 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:30:54,545 INFO uvicorn.access 127.0.0.1:41166 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:56,606 INFO uvicorn.access 127.0.0.1:40472 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:30:57,029 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f task_id=task_research_agent_latest_info task_status=SUCCEEDED attempts=3 result_status=PARTIAL recovery_action=PROCEED
+2026-11-06 17:30:58,686 INFO uvicorn.access 127.0.0.1:40478 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:00,796 INFO uvicorn.access 127.0.0.1:40488 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:02,885 INFO uvicorn.access 127.0.0.1:40504 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:03,295 INFO uvicorn.access 127.0.0.1:40512 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:31:04,968 INFO uvicorn.access 127.0.0.1:40516 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:07,051 INFO uvicorn.access 127.0.0.1:43050 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:09,165 INFO uvicorn.access 127.0.0.1:43054 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:11,257 INFO uvicorn.access 127.0.0.1:43068 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:13,354 INFO uvicorn.access 127.0.0.1:43070 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:13,371 INFO uvicorn.access 127.0.0.1:43084 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:31:15,459 INFO uvicorn.access 127.0.0.1:37972 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:17,574 INFO uvicorn.access 127.0.0.1:37988 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:19,669 INFO uvicorn.access 127.0.0.1:37992 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:21,762 INFO uvicorn.access 127.0.0.1:37994 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:23,405 INFO uvicorn.access 127.0.0.1:38008 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:31:23,834 INFO uvicorn.access 127.0.0.1:38020 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:25,922 INFO uvicorn.access 127.0.0.1:38602 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:28,023 INFO uvicorn.access 127.0.0.1:38608 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:30,132 INFO uvicorn.access 127.0.0.1:38616 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:32,231 INFO uvicorn.access 127.0.0.1:38630 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:33,432 INFO uvicorn.access 127.0.0.1:38644 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:31:34,327 INFO uvicorn.access 127.0.0.1:38646 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:36,415 INFO uvicorn.access 127.0.0.1:43878 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:38,528 INFO uvicorn.access 127.0.0.1:43892 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:40,627 INFO uvicorn.access 127.0.0.1:43894 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:42,738 INFO uvicorn.access 127.0.0.1:43906 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:43,470 INFO uvicorn.access 127.0.0.1:43908 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:31:44,816 INFO uvicorn.access 127.0.0.1:43924 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:46,896 INFO uvicorn.access 127.0.0.1:35212 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:49,006 INFO uvicorn.access 127.0.0.1:35222 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:51,098 INFO uvicorn.access 127.0.0.1:35238 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:53,389 INFO uvicorn.access 127.0.0.1:35240 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:53,497 INFO uvicorn.access 127.0.0.1:35252 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:31:55,490 INFO uvicorn.access 127.0.0.1:60842 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:31:59,161 INFO uvicorn.access 127.0.0.1:60858 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:31:59,233 INFO uvicorn.access 127.0.0.1:60862 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:32:32,371 INFO enterprise_agent.orchestration node=execute model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f task_id=task_analyze_agent_latest_info task_status=FAILED attempts=2 result_status=FAILED recovery_action=RETRY
+2026-11-06 17:32:32,418 INFO enterprise_agent.orchestration node=accept model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f status=PARTIAL
+2026-11-06 17:32:33,032 INFO enterprise_agent.orchestration node=metrics model_version=none prompt_version=none run_id=run_6c84ff162e1342c8ad9f model_calls=12 structured_output_failures=0 fallbacks=0 retries=2 input_tokens=63010 output_tokens=13394 latency_ms=427878 cost_usd=none
+2026-11-06 17:34:27,435 INFO uvicorn.access 127.0.0.1:46062 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:34:27,591 INFO uvicorn.access 127.0.0.1:46056 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:34:37,456 INFO uvicorn.access 127.0.0.1:53296 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:34:47,481 INFO uvicorn.access 127.0.0.1:52100 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:34:57,499 INFO uvicorn.access 127.0.0.1:50314 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:35:07,513 INFO uvicorn.access 127.0.0.1:51554 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:35:17,540 INFO uvicorn.access 127.0.0.1:39530 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:35:27,572 INFO uvicorn.access 127.0.0.1:34044 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:36:06,360 INFO uvicorn.access 127.0.0.1:48422 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:36:06,479 INFO uvicorn.access 127.0.0.1:48434 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:36:18,069 INFO uvicorn.access 127.0.0.1:59618 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:36:18,207 INFO uvicorn.access 127.0.0.1:59624 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:36:45,028 INFO uvicorn.access 127.0.0.1:36414 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:36:50,195 INFO uvicorn.access 127.0.0.1:43208 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:36:56,254 INFO uvicorn.access 127.0.0.1:39850 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:36:57,630 INFO uvicorn.access 127.0.0.1:39852 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-06 17:36:57,719 INFO uvicorn.access 127.0.0.1:39866 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:37:05,546 INFO uvicorn.access 127.0.0.1:53510 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:37:31,750 INFO uvicorn.access 127.0.0.1:44986 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:37:37,534 INFO uvicorn.access 127.0.0.1:47658 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:37:42,718 INFO uvicorn.access 127.0.0.1:47664 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:38:35,644 INFO uvicorn.access 127.0.0.1:59200 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200
+2026-11-06 17:38:41,745 INFO uvicorn.access 127.0.0.1:59202 - "GET /api/v1/runs/run_6c84ff162e1342c8ad9f/trace HTTP/1.1" 200

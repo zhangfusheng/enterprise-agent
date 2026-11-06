@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from enterprise_agent.agents.research.evidence import EvidenceIndex
 from enterprise_agent.agents.research.execution import ResearchExecutor
 from enterprise_agent.agents.research.planning import (
     PlanValidationError,
@@ -268,6 +269,10 @@ def research_metadata(
         item.model_dump(mode="json") if hasattr(item, "model_dump") else dict(item)
         for item in (assessments if assessments is not None else control.assessments())
     ]
+    evidence_index = EvidenceIndex.from_sources(
+        evidence,
+        assessments=normalized_assessments,
+    )
     metadata.update(
         {
             "plan_status": "compiled",
@@ -285,6 +290,7 @@ def research_metadata(
             "source_assessments": normalized_assessments,
             "duplicate_sources": control.duplicate_sources(),
             "freshness_counts": _assessment_freshness_counts(normalized_assessments),
+            "evidence_index": evidence_index.snapshot(),
         }
     )
     return metadata

@@ -207,21 +207,56 @@ class PageDocument(ResearchContract):
         return value
 
 
+class EvidenceIndexEntry(ResearchContract):
+    """A fetched document and the metadata required to cite it safely."""
+
+    document: PageDocument
+    candidate_id: str
+    normalized_urls: list[str] = Field(default_factory=list)
+    domain_key: str
+    source_type: SourceType = SourceType.UNKNOWN
+    freshness_status: FreshnessStatus = FreshnessStatus.UNKNOWN
+    eligible_for_citation: bool = True
+
+
 class EvidenceCitation(ResearchContract):
     document_id: str
     url: str
-    quote: str = Field(min_length=1)
+    quote: str = Field(min_length=1, max_length=2_000)
     locator: str | None = None
+
+    @field_validator("url")
+    @classmethod
+    def validate_http_url(cls, value: str) -> str:
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("citation URL must be an http(s) URL")
+        return value
 
 
 class EvidenceClaim(ResearchContract):
     claim_id: str
-    text: str
+    text: str = Field(min_length=1)
     support_status: SupportStatus
     confidence: float = Field(ge=0.0, le=1.0)
     citations: list[EvidenceCitation] = Field(default_factory=list)
     source_count: int = Field(default=0, ge=0)
     independent_domain_count: int = Field(default=0, ge=0)
+
+
+class EvidenceValidationIssue(ResearchContract):
+    code: str
+    message: str
+    claim_id: str | None = None
+    citation_index: int | None = Field(default=None, ge=0)
+    severity: str = "error"
+
+
+class EvidenceValidationReport(ResearchContract):
+    valid: bool
+    validated_claims: list[EvidenceClaim] = Field(default_factory=list)
+    issues: list[EvidenceValidationIssue] = Field(default_factory=list)
+    verification_summary: dict[str, int] = Field(default_factory=dict)
 
 
 class EvidencePack(ResearchContract):

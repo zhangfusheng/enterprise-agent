@@ -21,6 +21,11 @@ def test_api_submit_query_events_and_artifacts(container):
         result = client.get(f"/api/v1/runs/{run_id}")
         assert result.status_code == 200
         assert result.json()["status"] == "SUCCEEDED"
+        session = client.get(f"/api/v1/sessions/{response.json()['session_id']}")
+        assert session.status_code == 200
+        assistant_message = session.json()["messages"][-1]["content"]
+        assert assistant_message != result.json()["summary"]
+        assert "来源：" in assistant_message or "## 搜索结果" in assistant_message
         events = client.get(f"/api/v1/runs/{run_id}/events")
         assert events.status_code == 200
         assert "run.completed" in events.text

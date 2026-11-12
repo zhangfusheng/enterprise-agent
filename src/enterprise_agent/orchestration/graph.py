@@ -4,6 +4,8 @@ from typing import Any
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
+from enterprise_agent.agents.answer.definition import AnswerAgent
+from enterprise_agent.agents.answer.schemas import AnswerRequest
 from enterprise_agent.contracts.context import ExecutionContext
 from enterprise_agent.contracts.goals import GoalSpec
 from enterprise_agent.contracts.plans import GlobalPlan, PlanHistoryEntry, TaskSpec, TaskStatus
@@ -15,7 +17,6 @@ from enterprise_agent.governance.budgets import BudgetLimits
 from enterprise_agent.infrastructure.observability.logging import log_orchestration
 from enterprise_agent.infrastructure.observability.metrics import record_retry
 from enterprise_agent.infrastructure.observability.tracing import trace
-from enterprise_agent.orchestration.execution.direct import direct_answer
 from enterprise_agent.orchestration.execution.readiness import ready_tasks
 from enterprise_agent.orchestration.execution.workers import WorkerRegistry
 from enterprise_agent.orchestration.planning.identity import (
@@ -56,6 +57,7 @@ class GraphDependencies:
         max_replans: int,
         parser: RequestParser | None = None,
         draft_planner: LLMPlanner | None = None,
+        answer_agent: AnswerAgent | None = None,
         model_profile: str | None = None,
         reasoning_effort: str | None = None,
         external_network_allowed: bool = True,
@@ -65,6 +67,7 @@ class GraphDependencies:
         self.router = Router()
         self.planner = GlobalPlanner()
         self.draft_planner = draft_planner
+        self.answer_agent = answer_agent
         self.supervisor = Supervisor()
         self.workers = workers
         self.policy = policy
@@ -154,9 +157,22 @@ class _OrchestrationNodes:
 
     @_traced("direct")
     def direct(self, state: OrchestrationState) -> dict:
-        text = direct_answer(state["input_text"])
-        result = AgentResult(status=ResultStatus.SUCCESS, summary=text)
-        return {"summary": text, "result": result.model_dump(mode="json")}
+        if self.deps.answer_agent is None:
+            raise RuntimeError("direct route requires an AnswerAgent")
+        ledger = BudgetLedger(self.deps.limits, state.get("budget_used", {}))
+        ledger.consume("model_calls")
+        result = self.deps.answer_agent.run(
+            AnswerRequest(
+                question=state["input_text"],
+                inputs=list(state.get("inputs", [])),
+            ),
+            self._answer_context(state),
+        )
+        return {
+            "summary": result.summary,
+            "result": result.model_dump(mode="json"),
+            "budget_used": ledger.snapshot(),
+        }
 
     @_traced("plan")
     def plan(self, state: OrchestrationState) -> dict:
@@ -352,6 +368,26 @@ class _OrchestrationNodes:
                 "scopes": self.deps.workers.tool_scopes(),
                 "external_network_allowed": self.deps.external_network_allowed,
                 "network_mode": self.deps.network_mode,
+                "model_profile": self.deps.model_profile,
+                "reasoning_effort": self.deps.reasoning_effort,
+            },
+        )
+
+    def _answer_context(self, state: OrchestrationState) -> ExecutionContext:
+        return ExecutionContext(
+            run_id=state["run_id"],
+            tenant_id=state["tenant_id"],
+            user_id=state["user_id"],
+            agent_id="agent_answer",
+            parent_agent_id="agent_supervisor",
+            workspace_root=".",
+            allowed_roles=self.deps.policy.roles(),
+            allowed_tools=set(),
+            metadata={
+                "role": "answer",
+                "scopes": set(),
+                "external_network_allowed": False,
+                "network_mode": "disabled",
                 "model_profile": self.deps.model_profile,
                 "reasoning_effort": self.deps.reasoning_effort,
             },

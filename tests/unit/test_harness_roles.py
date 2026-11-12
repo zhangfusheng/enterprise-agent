@@ -6,8 +6,10 @@ from enterprise_agent.agents.harness.deepagents import DeepAgentsHarness
 from enterprise_agent.agents.harness.registry import HarnessRoleRegistry
 from enterprise_agent.agents.harness.roles import (
     ANALYSIS,
+    ANSWER,
     RESEARCH,
     AnalysisHarnessChatModel,
+    AnswerHarnessChatModel,
     ResearchHarnessChatModel,
 )
 from enterprise_agent.agents.harness.spec import HarnessRole, application_tools_role
@@ -38,6 +40,16 @@ def test_registered_roles_use_their_configured_models():
     assert isinstance(analysis, AnalysisHarnessChatModel)
     assert research._get_ls_params() == {"ls_provider": "enterprise", "ls_model_name": "research"}
     assert analysis._get_ls_params() == {"ls_provider": "enterprise", "ls_model_name": "analysis"}
+
+
+def test_answer_role_is_tool_free_and_uses_its_own_profile():
+    harness = offline_harness(ANSWER)
+    answer = harness._wrap_model(harness.roles.get("answer"), harness._chat_model("answer"))
+
+    assert isinstance(answer, AnswerHarnessChatModel)
+    assert answer._get_ls_params() == {"ls_provider": "enterprise", "ls_model_name": "answer"}
+    messages = harness.invoke("answer", "回答什么是幂等性", tools=[], thread_id="answer-1")
+    assert "回答什么是幂等性" in str(messages[-1].content)
 
 
 def test_unknown_role_is_rejected():

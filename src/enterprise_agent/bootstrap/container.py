@@ -19,11 +19,13 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from enterprise_agent.agents.analysis.definition import AnalysisAgent
+from enterprise_agent.agents.answer.definition import PROMPT_VERSION as ANSWER_PROMPT_VERSION
+from enterprise_agent.agents.answer.definition import AnswerAgent
 from enterprise_agent.agents.delegation.service import DelegationService
 from enterprise_agent.agents.factory import AgentFactory
 from enterprise_agent.agents.harness.deepagents import WORKER_PROMPT_VERSION, DeepAgentsHarness
 from enterprise_agent.agents.harness.registry import HarnessRoleRegistry
-from enterprise_agent.agents.harness.roles import ANALYSIS, RESEARCH
+from enterprise_agent.agents.harness.roles import ANALYSIS, ANSWER, RESEARCH
 from enterprise_agent.agents.research.definition import ResearchAgent
 from enterprise_agent.agents.research.planning import (
     PLAN_PROMPT_VERSION as RESEARCH_PLAN_PROMPT_VERSION,
@@ -192,6 +194,7 @@ class Container:
             harness=self.harness,
             gateway=self.tool_gateway,
         )
+        self.answer = AnswerAgent(self.harness)
         self.delegation = DelegationService(
             DelegationGuard(
                 self.policy,
@@ -207,7 +210,12 @@ class Container:
         missing = sorted(self.workers.roles() - self.harness.roles.roles())
         if missing:
             raise BootstrapError(f"workers have no harness role: {missing}")
-        self.agents = AgentFactory(self.research, self.analysis, self.delegation)
+        self.agents = AgentFactory(
+            self.answer,
+            self.research,
+            self.analysis,
+            self.delegation,
+        )
 
     def open_gateway(
         self,
@@ -308,6 +316,7 @@ class Container:
                 "plan_prompt": ORCHESTRATION_PLAN_PROMPT_VERSION,
                 "research_plan_prompt": RESEARCH_PLAN_PROMPT_VERSION,
                 "worker_prompt": WORKER_PROMPT_VERSION,
+                "answer_prompt": ANSWER_PROMPT_VERSION,
             },
         }
 
@@ -580,7 +589,7 @@ def _assert_runtime_contract(
 
 def _harness_roles() -> HarnessRoleRegistry:
     """Workers this process executes. Add a role here when adding its worker."""
-    return HarnessRoleRegistry((RESEARCH, ANALYSIS))
+    return HarnessRoleRegistry((ANSWER, RESEARCH, ANALYSIS))
 
 
 def _scope_id(label: str, value: str) -> str:

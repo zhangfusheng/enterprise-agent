@@ -1,6 +1,6 @@
 import pytest
 
-from enterprise_agent.application.execute_run import execute_run
+from enterprise_agent.application.execute_run import _assistant_content, execute_run
 from enterprise_agent.application.submit_run import submit_run
 from enterprise_agent.contracts.context import IdentityContext
 from enterprise_agent.contracts.runs import RunCreate, RunStatus
@@ -63,3 +63,68 @@ def test_non_mapping_graph_result_marks_run_failed(container, monkeypatch):
     state = container.runs.get_run_unscoped(run_id).state_json
     assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.FAILED
     assert state["error"] == "TypeError"
+
+
+def test_assistant_content_exposes_saved_report_and_search_sources():
+    content = _assistant_content(
+        {
+            "summary": "收集到 1 条已验证来源。",
+            "task_results": {
+                "task_research": {
+                    "sources": [
+                        {
+                            "title": "来源标题",
+                            "url": "https://example.com/article",
+                            "snippet": "搜索结果摘要",
+                        }
+                    ],
+                    "structured_data": {"evidence": []},
+                },
+                "task_analysis": {
+                    "sources": [
+                        {
+                            "title": "来源标题",
+                            "url": "https://example.com/article",
+                            "snippet": "搜索结果摘要",
+                        }
+                    ],
+                    "structured_data": {
+                        "report_markdown": "# 分析报告\n\n这是报告正文。",
+                    },
+                },
+            },
+        }
+    )
+
+    assert content is not None
+    assert "# 分析报告" in content
+    assert "这是报告正文。" in content
+    assert "来源标题" in content
+    assert "搜索结果摘要" in content
+    assert "收集到 1 条已验证来源" not in content
+
+
+def test_assistant_content_formats_search_results_without_report():
+    content = _assistant_content(
+        {
+            "summary": "收集到 1 条已验证来源。",
+            "task_results": {
+                "task_research": {
+                    "sources": [
+                        {
+                            "title": "来源标题",
+                            "url": "https://example.com/article",
+                            "content": "网页正文内容",
+                        }
+                    ]
+                }
+            },
+        }
+    )
+
+    assert content == (
+        "## 搜索结果\n\n"
+        "### 1. 来源标题\n\n"
+        "来源：https://example.com/article\n\n"
+        "网页正文内容"
+    )

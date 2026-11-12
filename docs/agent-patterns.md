@@ -3,6 +3,7 @@
 | 模式 | 所在层 | 组件 | 框架来源 | 默认/显式配置 | 自建补充 | 对应测试 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Routing | orchestration/routing | GoalParser、Router、route validation | LangGraph 节点承载；决策逻辑自建 | 显式 route 与能力校验 | 无外部操作 direct 禁止规则 | `tests/unit/test_routing.py` |
+| Answering | agents/answer + agents/harness | AnswerAgent、answer Harness Role | Deep Agents/LangChain chat model | direct 路径显式调用；工具集合为空 | 原始请求和补充材料按不可信数据传递，不执行外部操作 | `tests/unit/test_answer_agent.py`、`tests/unit/test_graph.py` |
 | Planning | orchestration/planning + agents/harness | GlobalPlanner；Worker local todo | Deep Agents/LangChain `TodoListMiddleware` | Todo middleware 显式加入，GlobalPlan 总是服务端校验 | 全局 DAG 与局部 Todo 分离 | `tests/unit/test_plans.py`、`tests/integration/test_offline_runs.py` |
 | Replanning | orchestration/planning/revision | `bounded_revision`、plan history | LangGraph checkpoint 保存状态 | `EA_MAX_REPLANS=2` | 已完成任务不自动重做，新版本保留旧计划 | `tests/unit/test_plans.py` |
 | Tool Use | tools | ToolRegistry、ToolGateway | LangChain tool schema；Deep Agents 可承载工具循环 | timeout、结果大小、作用域、预算显式 | UNKNOWN/幂等、SSRF、脱敏和操作 ID | `tests/unit/test_tools.py` |

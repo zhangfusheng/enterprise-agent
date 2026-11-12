@@ -30,13 +30,15 @@ def test_config_snapshot_uses_each_profiles_provider(container: Container):
         assert snapped["config_version"] == providers[profile.provider]
         assert "credential_ref" not in snapped
     assert "web_search" in snapshot["tools"]
+    assert "answer" in snapshot["roles"]
     assert "research" in snapshot["roles"]
     assert snapshot["runtime"]["budgets"]["tool_calls"] == container.settings.max_tool_calls
-    assert snapshot["versions"]["policy"] == "agents-v1"
+    assert snapshot["versions"]["policy"] == "agents-v2"
     assert snapshot["versions"]["orchestration"] == "orchestration-v1"
     assert snapshot["versions"]["goal_prompt"] == "goal-parser-v2"
     assert snapshot["versions"]["plan_prompt"] == "plan-draft-v1"
     assert snapshot["versions"]["worker_prompt"] == "worker-prompt-v1"
+    assert snapshot["versions"]["answer_prompt"] == "answer-prompt-v1"
 
 
 def test_workspace_read_stays_inside_the_run(container: Container):

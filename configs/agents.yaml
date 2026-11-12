@@ -1,5 +1,9 @@
-version: agents-v1
+version: agents-v2
 roles:
+  answer:
+    capabilities: []
+    tools: []
+    can_delegate_to: []
   research:
     capabilities: [web_search, web_fetch, workspace_read]
     tools: [web_search, web_fetch, workspace_read]

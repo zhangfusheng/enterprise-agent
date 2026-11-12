@@ -2,6 +2,7 @@
 
 - `GoalSpec`：目标 ID、输入资料、约束、交付物、验收条件和缺失信息；解析不把模型 confidence 当概率。
 - `RouteDecision`：`direct`、`single`、`multi`、所需能力、single 角色和说明。`direct` 不做工具或外部操作。
+- `AnswerAgent`：direct 路径中的无工具回答 Agent；只接收用户请求和补充材料，返回 `AgentResult`，不访问实时信息、不执行副作用。
 - `GlobalPlan`/`TaskSpec`：计划版本、Run ID、目标关联、角色、输入引用、依赖、预期输出、验收条件和状态。校验 ID、引用、角色和无环性。
 - `AgentResult`：`status`、摘要、结构化数据、来源、产物引用、未满足要求和错误；父 Agent 只接收此结果，不接收隐藏思维链。
 - `IdentityContext`：服务端产生 tenant/user；本地开发身份明确标记为 development，生产环境默认拒绝未配置认证适配器。

@@ -169,12 +169,12 @@ def test_run_pins_versions_and_empty_model_metrics(container):
     execute_run(container, run_id, "worker-a")
     state = container.runs.get_run_unscoped(run_id).state_json
     versions = state["config_snapshot"]["versions"]
-    assert versions["policy"] == "agents-v1"
+    assert versions["policy"] == "agents-v2"
     assert versions["orchestration"] == "orchestration-v1"
     assert versions["goal_prompt"] == "goal-parser-v2"
     assert versions["plan_prompt"] == "plan-draft-v1"
     metrics = state["metrics"]
-    assert metrics["model_calls"] == 0
+    assert metrics["model_calls"] == 1
     assert metrics["structured_output_failures"] == 0
     assert metrics["fallbacks"] == 0
     assert metrics["retries"] == 0

@@ -163,7 +163,10 @@ def test_direct_run_persists_a_queryable_trace(container):
     run_id = _run(container, RunCreate(input="请直接回答什么是幂等性？"))
     view = container.traces.get("tenant-a", run_id)
     assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.SUCCEEDED
-    assert [item.name for item in view.runs] == ["orchestration", "parse_route", "direct", "accept"]
+    names = [item.name for item in view.runs]
+    assert names[:3] == ["orchestration", "parse_route", "direct"]
+    assert "answer" in names
+    assert names[-1] == "accept"
     assert view.roots[0].outputs["status"] == "SUCCEEDED"
     assert view.roots[0].outputs["route"] == "direct"
     assert view.roots[0].children[0].outputs["route"] == "direct"

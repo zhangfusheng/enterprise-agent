@@ -183,6 +183,7 @@ class _RunExecution:
             max_replans=self.container.settings.max_replans,
             parser=self.parser,
             draft_planner=self.draft_planner,
+            answer_agent=self.container.answer,
             model_profile=self.model_profile,
             reasoning_effort=self.reasoning_effort,
             external_network_allowed=(
@@ -294,6 +295,7 @@ class _RunExecution:
                 state=state,
                 route=_route_name(final),
                 summary=final.get("summary"),
+                assistant_content=_assistant_content(final),
                 budget=_budget(final, row),
                 events=tuple(events),
                 plan=plan,
@@ -536,6 +538,90 @@ def _trace_outputs(final: Mapping[str, Any]) -> dict[str, Any]:
         "route": _route_name(final),
         "summary": final.get("summary"),
     }
+
+
+def _assistant_content(final: Mapping[str, Any]) -> str | None:
+    """Build the user-facing chat reply from the actual research deliverable.
+
+    ``summary`` is intentionally short because it is also used in the run list.
+    Chat turns should expose the saved analysis and enough source context to make
+    the search result useful without dumping full fetched pages into the UI.
+    """
+
+    task_results = final.get("task_results")
+    if not isinstance(task_results, Mapping):
+        value = final.get("summary")
+        return value.strip() if isinstance(value, str) and value.strip() else None
+
+    reports: list[str] = []
+    sources: list[Mapping[str, Any]] = []
+    seen_reports: set[str] = set()
+    seen_sources: set[str] = set()
+
+    for raw_result in task_results.values():
+        if not isinstance(raw_result, Mapping):
+            continue
+        structured = raw_result.get("structured_data")
+        if isinstance(structured, Mapping):
+            report = structured.get("report_markdown")
+            if isinstance(report, str) and report.strip() and report.strip() not in seen_reports:
+                seen_reports.add(report.strip())
+                reports.append(report.strip())
+            _collect_sources(structured.get("evidence"), sources, seen_sources)
+        _collect_sources(raw_result.get("sources"), sources, seen_sources)
+
+    if reports:
+        content = "\n\n".join(reports)
+        source_section = _format_source_section(sources)
+        return f"{content}\n\n{source_section}" if source_section else content
+
+    if sources:
+        source_section = _format_source_section(sources)
+        return f"## 搜索结果\n\n{source_section}"
+
+    value = final.get("summary")
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def _collect_sources(
+    value: Any,
+    destination: list[Mapping[str, Any]],
+    seen: set[str],
+) -> None:
+    if not isinstance(value, list):
+        return
+    for item in value:
+        if not isinstance(item, Mapping):
+            continue
+        url = item.get("url")
+        if not isinstance(url, str) or not url.strip():
+            continue
+        key = str(item.get("document_id") or url.strip().casefold().rstrip("/"))
+        if key in seen:
+            continue
+        seen.add(key)
+        destination.append(item)
+
+
+def _format_source_section(sources: list[Mapping[str, Any]]) -> str:
+    lines: list[str] = []
+    for index, source in enumerate(sources, start=1):
+        title = source.get("title")
+        url = source.get("url")
+        if not isinstance(url, str) or not url.strip():
+            continue
+        label = title.strip() if isinstance(title, str) and title.strip() else url.strip()
+        detail = source.get("snippet")
+        if not isinstance(detail, str) or not detail.strip():
+            detail = source.get("content")
+        if isinstance(detail, str):
+            detail = detail.strip()
+            if len(detail) > 2_000:
+                detail = f"{detail[:2_000].rstrip()}…"
+        else:
+            detail = ""
+        lines.append(f"### {index}. {label}\n\n来源：{url.strip()}" + (f"\n\n{detail}" if detail else ""))
+    return "\n\n".join(lines)
 
 
 def _optional_plan(final: Mapping[str, Any]) -> GlobalPlan | None:

@@ -76,6 +76,7 @@ class RunOutcome:
     state: dict
     route: str | None = None
     summary: str | None = None
+    assistant_content: str | None = None
     budget: dict | None = None
     events: tuple[OutcomeRecord, ...] = ()
     plan: GlobalPlan | None = None
@@ -620,7 +621,12 @@ class RunRepository:
             row.updated_at = now
             conversation = _chat_session_for_run(session, run_id, tenant_id)
             if conversation is not None:
-                content = outcome.summary or row.summary or _status_message(outcome.status, row)
+                content = (
+                    outcome.assistant_content
+                    or outcome.summary
+                    or row.summary
+                    or _status_message(outcome.status, row)
+                )
                 _upsert_assistant_message(session, conversation, run_id, content, now)
                 conversation.updated_at = now
             for event in outcome.events:

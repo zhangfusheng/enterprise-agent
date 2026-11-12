@@ -4,7 +4,10 @@ import pprint
 import pytest
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
+from tests.support.harness import offline_harness
 
+from enterprise_agent.agents.answer.definition import AnswerAgent
+from enterprise_agent.agents.harness.roles import ANSWER
 from enterprise_agent.contracts.plans import TaskStatus
 from enterprise_agent.contracts.results import AgentResult, ResultStatus
 from enterprise_agent.contracts.runs import RunStatus
@@ -44,6 +47,7 @@ class _TwoAnswerParser:
 
 def _policy() -> AuthorizationPolicy:
     return AuthorizationPolicy([
+        RolePolicy("answer", frozenset(), frozenset(), frozenset()),
         RolePolicy(
             "research",
             frozenset({"web_search", "web_fetch", "workspace_read"}),
@@ -63,6 +67,10 @@ def _limits() -> BudgetLimits:
     return BudgetLimits(model_calls=10, tool_calls=10, agents=8, steps=20, runtime_seconds=100)
 
 
+def _answer_agent() -> AnswerAgent:
+    return AnswerAgent(offline_harness(ANSWER))
+
+
 def _deps(
     *workers: _ScriptedWorker,
     max_replans: int = 2,
@@ -74,6 +82,7 @@ def _deps(
         _limits(),
         max_tasks=12,
         max_replans=max_replans,
+        answer_agent=_answer_agent(),
         external_network_allowed=external_network_allowed,
     )
 
@@ -104,7 +113,9 @@ def test_direct_answer_ends_at_acceptance():
     pprint.pp(final)
     assert final["status"] == RunStatus.SUCCEEDED
     assert final["route"]["route"] == "direct"
-    assert final["result"]["summary"].startswith("直接回答")
+    assert final["result"]["summary"].startswith("离线模型已处理")
+    assert final["result"]["structured_data"]["answer"] == final["result"]["summary"]
+    assert final["budget_used"]["model_calls"] == 1
     assert "plan" not in final
 
 
@@ -161,6 +172,7 @@ def test_waiting_input_restarts_from_all_persisted_answers():
             max_tasks=12,
             max_replans=2,
             parser=_TwoAnswerParser(),
+            answer_agent=_answer_agent(),
         ),
         InMemorySaver(),
     )

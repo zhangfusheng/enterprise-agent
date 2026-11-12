@@ -11,7 +11,7 @@ HTTP -> application use case -> SQLAlchemy repositories -> PostgreSQL/SQLite
 Worker -> LangGraph parse/route/plan/execute/aggregate
              |                 |
              v                 v
-       Deep Agents harness   ToolGateway -> governed tools
+       Answer Agent / Deep Agents harness   ToolGateway -> governed tools
 ```
 
 ## 四种职责
@@ -19,11 +19,15 @@ Worker -> LangGraph parse/route/plan/execute/aggregate
 | 组件 | 职责 | 第一版实现 |
 | --- | --- | --- |
 | Router | 根据 GoalSpec 的能力、实时/外部操作和交付要求选择 direct/single/multi | `orchestration/routing`；不是关键词演示路由，也不使用 confidence 概率 |
+| Answer Agent | 在 direct 路径中生成面向用户的最终回答 | `agents/answer` + 无工具 Deep Agents harness；不访问外部信息或执行副作用 |
 | Planner | 生成并校验全局任务 DAG，有限版本修订 | `GlobalPlanner` + `validate_plan` |
 | Supervisor | 组织依赖任务、处理 Worker 结果、委派子 Agent、汇总验收 | LangGraph `execute`/`aggregate` 节点和 `Supervisor` |
 | Executor | 确定性地选 ready task，按依赖顺序执行，记录结果 | `ready_tasks` 和 `execute_run` |
 
 Worker 内部的 Local Planner 由 Deep Agents 的显式 `TodoListMiddleware` 提供；它是局部进度，不改变全局 DAG 的权威状态。
+
+Direct 路径仍跳过全局计划、Worker 和工具循环，但由 Answer Agent 执行一次模型调用：
+`parse_route -> direct -> AnswerAgent -> accept`。需要搜索、实时信息、计算、文件或外部副作用的请求不能进入 Answer Agent，必须由 Router 选择 single/multi。
 
 ## 状态和恢复
 

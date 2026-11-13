@@ -2,7 +2,7 @@
 
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, WithJsonSchema, create_model
@@ -339,7 +339,10 @@ def _draft_schema(roles: tuple[str, ...], capabilities: tuple[str, ...], goal_id
         "TaskDraft",
         __config__=ConfigDict(extra="ignore"),
         task_id=(str, Field(pattern=r"^task_[a-z0-9_-]+$")),
-        task_key=(str | None, Field(default=None, min_length=1, max_length=128)),
+        task_key=(
+            cast(type[Any], str | None),
+            Field(default=None, min_length=1, max_length=128),
+        ),
         goal_ids=(_goal_ids(goal_ids), Field(min_length=1)),
         agent_role=(_closed_text(roles, "role"), ...),
         required_capabilities=(_closed_list(capabilities, "capability"), Field(default_factory=list)),

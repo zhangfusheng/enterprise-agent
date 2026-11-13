@@ -93,12 +93,12 @@ def test_a_real_search_request_is_not_treated_as_negation():
     validate_route(decision, _policy())
 
 
-def test_negated_calculation_stays_on_analysis():
+def test_negated_calculation_without_data_is_direct_reasoning():
     spec = GoalParser().parse("请分析但不要计算增长率")
     decision = Router().decide(spec)
-    assert spec.goals[0].required_capabilities == ["analysis"]
-    assert decision.route == RouteKind.SINGLE
-    assert decision.selected_role == "analysis"
+    assert spec.goals[0].required_capabilities == []
+    assert decision.route == RouteKind.DIRECT
+    assert decision.selected_role is None
     validate_route(decision, _policy())
 
 
@@ -121,12 +121,12 @@ def test_composite_analysis_and_calculate_stay_on_one_worker():
     decision = Router().decide(spec)
     assert decision.route == RouteKind.SINGLE
     assert decision.selected_role == "analysis"
-    assert {"analysis", "calculate"} <= set(decision.required_capabilities)
+    assert decision.required_capabilities == ["calculate"]
     validate_route(decision, _policy())
 
 
 def test_requested_role_cannot_escalate_privileges():
-    spec = GoalParser().parse("请比较方案")
+    spec = GoalParser().parse("请计算两个方案的增长率")
     decision = Router().decide(spec, "research")
     with pytest.raises(AuthorizationError, match="lacks capabilities"):
         validate_route(decision, _policy())
@@ -171,7 +171,7 @@ def test_run_pins_versions_and_empty_model_metrics(container):
     versions = state["config_snapshot"]["versions"]
     assert versions["policy"] == "agents-v2"
     assert versions["orchestration"] == "orchestration-v1"
-    assert versions["goal_prompt"] == "goal-parser-v2"
+    assert versions["goal_prompt"] == "goal-parser-v4"
     assert versions["plan_prompt"] == "plan-draft-v1"
     metrics = state["metrics"]
     assert metrics["model_calls"] == 1

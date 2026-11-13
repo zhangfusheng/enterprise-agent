@@ -1,7 +1,7 @@
+from apps.worker.main import Worker
 from dotenv import load_dotenv
 from sqlalchemy import select
 
-from apps.worker.main import Worker
 from enterprise_agent.application.submit_run import submit_run
 from enterprise_agent.contracts.context import IdentityContext
 from enterprise_agent.contracts.runs import RunCreate, RunStatus

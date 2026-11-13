@@ -48,6 +48,7 @@ _STATE_KEYS = (
     "task_results",
     "result",
     "missing_information",
+    "parse_provenance",
     "replan_count",
 )
 _ERROR_LIMIT = 500
@@ -305,14 +306,23 @@ class _RunExecution:
         )
 
     def _persist_interrupt(self, row: RunRow, final: Mapping[str, Any]) -> None:
-        spec = _snapshot_parser(self.parser).parse(self.input_text, self.inputs, self.constraints)
+        raw_spec = final.get("goal_spec")
+        if not isinstance(raw_spec, Mapping):
+            raise RuntimeError("input interrupt is missing the validated goal_spec")
+        raw_inputs = final.get("inputs", self.inputs)
+        if not isinstance(raw_inputs, list):
+            raise TypeError("input interrupt contains invalid inputs")
+        missing = final.get("missing_information", [])
+        if not isinstance(missing, list):
+            raise TypeError("input interrupt contains invalid missing_information")
         self._commit(
             RunOutcome(
                 status=RunStatus.WAITING_INPUT,
                 state={
-                    "goal_spec": spec.model_dump(mode="json"),
-                    "inputs": self.inputs,
-                    "missing_information": spec.missing_information,
+                    "goal_spec": dict(raw_spec),
+                    "inputs": list(raw_inputs),
+                    "missing_information": list(missing),
+                    "parse_provenance": final.get("parse_provenance", {}),
                     "additional_input": None,
                     **self._observation(final),
                 },
@@ -481,12 +491,20 @@ def _request_planner(
 
 
 def _resolved_versions(final: Mapping[str, Any], planner: LLMPlanner | None) -> dict[str, Any]:
-    parser = parser_trace()
-    versions: dict[str, Any] = {
-        "parser": parser.name,
-        "parser_model": parser.model_version,
-        "parser_prompt": parser.prompt_version,
-    }
+    provenance = final.get("parse_provenance")
+    if isinstance(provenance, Mapping):
+        versions: dict[str, Any] = {
+            "parser": provenance.get("parser"),
+            "parser_model": provenance.get("model_version"),
+            "parser_prompt": provenance.get("prompt_version"),
+        }
+    else:
+        parser = parser_trace()
+        versions = {
+            "parser": parser.name,
+            "parser_model": parser.model_version,
+            "parser_prompt": parser.prompt_version,
+        }
     if "plan" not in final:
         return versions
     if planner is None:
@@ -497,15 +515,6 @@ def _resolved_versions(final: Mapping[str, Any], planner: LLMPlanner | None) -> 
     versions["planner_model"] = trace.model_version
     versions["planner_prompt"] = trace.prompt_version
     return versions
-
-
-def _snapshot_parser(parser: RequestParser) -> GoalParser:
-    fallback = getattr(parser, "fallback", None)
-    if isinstance(fallback, GoalParser):
-        return fallback
-    if isinstance(parser, GoalParser):
-        return parser
-    return GoalParser()
 
 
 def _network_mode(settings: Settings) -> str:

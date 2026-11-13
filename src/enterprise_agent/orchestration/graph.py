@@ -28,6 +28,7 @@ from enterprise_agent.orchestration.planning.planner import GlobalPlanner
 from enterprise_agent.orchestration.planning.validation import validate_plan
 from enterprise_agent.orchestration.routing.parser import GoalParser, RequestParser, parser_trace
 from enterprise_agent.orchestration.routing.router import Router
+from enterprise_agent.orchestration.routing.spec_validation import validate_goal_spec
 from enterprise_agent.orchestration.routing.validation import validate_route
 from enterprise_agent.orchestration.state import OrchestrationState
 from enterprise_agent.orchestration.supervision.aggregator import merge_results
@@ -64,7 +65,7 @@ class GraphDependencies:
         network_mode: str = "external",
     ) -> None:
         self.parser = parser or GoalParser()
-        self.router = Router()
+        self.router = Router(policy)
         self.planner = GlobalPlanner()
         self.draft_planner = draft_planner
         self.answer_agent = answer_agent
@@ -103,17 +104,19 @@ class _OrchestrationNodes:
     @_traced("parse_route")
     def parse_route(self, state: OrchestrationState) -> dict:
         inputs = list(state.get("inputs", []))
-        spec = self.deps.parser.parse(state["input_text"], inputs, state.get("constraints", {}))
+        spec = validate_goal_spec(
+            self.deps.parser.parse(state["input_text"], inputs, state.get("constraints", {})),
+            self.deps.policy,
+        )
+        provenance = _parse_provenance()
         if spec.is_waiting_input:
-            additional = interrupt({"type": "input_required", "missing": spec.missing_information})
-            inputs.append({"name": "user_input", "content": str(additional)})
-            spec = self.deps.parser.parse(state["input_text"], inputs, state.get("constraints", {}))
-        if spec.is_waiting_input:
-            self._log(state, "parse_route", **_parse_fields(spec, state))
+            self._log(state, "parse_route", **_parse_fields(spec, state, provenance))
             return {
                 "goal_spec": spec.model_dump(mode="json"),
                 "inputs": inputs,
                 "missing_information": spec.missing_information,
+                "awaiting_user_input": True,
+                "parse_provenance": provenance,
                 "status": RunStatus.WAITING_INPUT,
             }
         decision = self.deps.router.decide(spec, state.get("requested_role"))
@@ -125,7 +128,7 @@ class _OrchestrationNodes:
             self._log(
                 state,
                 "parse_route",
-                **_parse_fields(spec, state),
+                **_parse_fields(spec, state, provenance),
                 route=decision.route,
                 external_network_allowed=False,
                 network_mode=self.deps.network_mode,
@@ -136,6 +139,8 @@ class _OrchestrationNodes:
                 "route": decision.model_dump(mode="json"),
                 "inputs": inputs,
                 "missing_information": missing,
+                "awaiting_user_input": False,
+                "parse_provenance": provenance,
                 "status": RunStatus.WAITING_INPUT,
             }
         self._log(
@@ -145,13 +150,29 @@ class _OrchestrationNodes:
             rationale=decision.rationale,
             external_network_allowed=self.deps.external_network_allowed,
             network_mode=self.deps.network_mode,
-            **_parse_fields(spec, state),
+            **_parse_fields(spec, state, provenance),
         )
         return {
             "goal_spec": spec.model_dump(mode="json"),
             "route": decision.model_dump(mode="json"),
             "inputs": inputs,
             "missing_information": spec.missing_information,
+            "awaiting_user_input": False,
+            "parse_provenance": provenance,
+            "status": RunStatus.RUNNING,
+        }
+
+    @_traced("await_input")
+    def await_input(self, state: OrchestrationState) -> dict:
+        additional = interrupt(
+            {"type": "input_required", "missing": list(state.get("missing_information", []))}
+        )
+        inputs = list(state.get("inputs", []))
+        inputs.append({"name": "user_input", "content": str(additional)})
+        return {
+            "inputs": inputs,
+            "missing_information": [],
+            "awaiting_user_input": False,
             "status": RunStatus.RUNNING,
         }
 
@@ -333,6 +354,8 @@ class _OrchestrationNodes:
         }
 
     def route_after_parse(self, state: OrchestrationState) -> str:
+        if state.get("awaiting_user_input"):
+            return "await_input"
         if state.get("missing_information"):
             return END
         route = state["route"]["route"]
@@ -401,6 +424,7 @@ def build_graph(deps: GraphDependencies, checkpointer=None):
     nodes = _OrchestrationNodes(deps)
     builder = StateGraph(OrchestrationState)
     builder.add_node("parse_route", nodes.parse_route)
+    builder.add_node("await_input", nodes.await_input)
     builder.add_node("direct", nodes.direct)
     builder.add_node("plan", nodes.plan)
     builder.add_node("execute", nodes.execute)
@@ -411,8 +435,9 @@ def build_graph(deps: GraphDependencies, checkpointer=None):
     builder.add_conditional_edges(
         "parse_route",
         nodes.route_after_parse,
-        {END: END, "direct": "direct", "plan": "plan"},
+        {END: END, "await_input": "await_input", "direct": "direct", "plan": "plan"},
     )
+    builder.add_edge("await_input", "parse_route")
     builder.add_edge("direct", "accept")
     builder.add_edge("plan", "execute")
     builder.add_edge("execute", "aggregate")
@@ -438,12 +463,22 @@ def _unmet(results: dict[str, dict[str, Any]]) -> list[str]:
     return found
 
 
-def _parse_fields(spec: GoalSpec, state: OrchestrationState) -> dict[str, object]:
+def _parse_provenance() -> dict[str, str | None]:
     trace = parser_trace()
     return {
         "parser": trace.name,
         "model_version": trace.model_version,
         "prompt_version": trace.prompt_version,
+    }
+
+
+def _parse_fields(
+    spec: GoalSpec,
+    state: OrchestrationState,
+    provenance: dict[str, str | None],
+) -> dict[str, object]:
+    return {
+        **provenance,
         "goal_ids": _goal_ids(spec),
         "input_chars": len(state["input_text"]),
     }

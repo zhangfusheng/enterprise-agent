@@ -18,11 +18,16 @@ _MISSING_MATERIAL = "请提供要分析的资料或文件。"
 
 _CAPABILITY_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("web_search", re.compile(r"https?://|网页|搜索|最新|实时|来源", re.IGNORECASE)),
-    ("analysis", re.compile(r"报告|比较|分析|研究|总结|评估", re.IGNORECASE)),
     ("calculate", re.compile(r"计算|均值|平均|增长率|差值|求和", re.IGNORECASE)),
-    ("workspace_read", re.compile(r"保存|文件|资料|文档", re.IGNORECASE)),
 )
-_REPORT_PATTERN = re.compile(r"报告|markdown|交付物|保存", re.IGNORECASE)
+_ANALYZE_MATERIAL_PATTERN = re.compile(
+    r"(?:分析|统计|检查|识别).{0,8}(?:CSV|数据|日志|附件|资料|文件)|"
+    r"(?:CSV|数据|日志|附件|资料|文件).{0,8}(?:分析|统计|异常|趋势)",
+    re.IGNORECASE,
+)
+_ANALYZE_EXTERNAL_PATTERN = re.compile(r"分析|比较|评估|总结|报告", re.IGNORECASE)
+_REPORT_PATTERN = re.compile(r"报告|markdown|JSON|交付物|文档|文件", re.IGNORECASE)
+_ARTIFACT_PATTERN = re.compile(r"保存|文件|下载|写入", re.IGNORECASE)
 _MATERIAL_PATTERN = re.compile(r"我的资料|上传的|附件|这份文件|给定资料", re.IGNORECASE)
 
 _REPORT = Deliverable(
@@ -88,7 +93,9 @@ class GoalParser:
             ],
             inputs=materials,
             constraints=request_constraints(raw_constraints),
-            deliverables=[_REPORT.model_copy()] if _REPORT_PATTERN.search(cleaned) else [],
+            deliverables=[_deliverable(cleaned)]
+            if _REPORT_PATTERN.search(cleaned)
+            else [],
             acceptance_criteria=[_CRITERION.model_copy()],
             missing_information=material_gap(cleaned, materials),
         )
@@ -102,7 +109,23 @@ def _capabilities(text: str) -> list[str]:
     for name, pattern in _CAPABILITY_RULES:
         if any(not _NEGATION.search(text[max(0, match.start() - 8) : match.start()]) for match in pattern.finditer(text)):
             found.append(name)
+    if _ANALYZE_MATERIAL_PATTERN.search(text):
+        found.append("analysis")
+    # Synthesizing externally acquired evidence is worker analysis; the same
+    # verbs in a self-contained knowledge question remain ordinary reasoning.
+    if "web_search" in found and _ANALYZE_EXTERNAL_PATTERN.search(text):
+        found.append("analysis")
     return sorted(found)
+
+
+def _deliverable(text: str) -> Deliverable:
+    output_format = "json" if re.search(r"JSON", text, re.IGNORECASE) else "markdown"
+    return _REPORT.model_copy(
+        update={
+            "format": output_format,
+            "delivery_mode": "artifact" if _ARTIFACT_PATTERN.search(text) else "inline",
+        }
+    )
 
 
 def request_constraints(raw: dict[str, Any] | None) -> ConstraintSet:

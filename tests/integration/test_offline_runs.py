@@ -47,6 +47,15 @@ def test_missing_input_is_checkpointed_and_resumed(container):
     assert container.runs.claim_work("worker-a", 30) == run_id
     execute_run(container, run_id, "worker-a")
     assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.WAITING_INPUT
+    waiting_state = container.runs.get_run_unscoped(run_id).state_json
+    assert waiting_state["goal_spec"]["goals"][0]["description"] == "请分析我的资料"
+    assert waiting_state["goal_spec"]["missing_information"] == ["请提供要分析的资料或文件。"]
+    assert waiting_state["parse_provenance"] == {
+        "parser": "rules",
+        "model_version": None,
+        "prompt_version": None,
+    }
+    assert waiting_state["resolved_versions"]["parser"] == "rules"
     container.runs.update_run("tenant-a", run_id, {"additional_input": "这是补充资料", "input": "请分析我的资料"})
     container.runs.requeue_work(run_id)
     assert container.runs.claim_work("worker-a", 30) == run_id

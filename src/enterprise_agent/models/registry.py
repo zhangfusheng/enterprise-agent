@@ -1,3 +1,5 @@
+from typing import Any
+
 from langchain_core.language_models import BaseChatModel
 
 from .cards import ModelCard
@@ -168,7 +170,7 @@ class ModelRegistry:
 
     def _parameter_fields(
         self, profile: ModelProfile, provider: ProviderConfig
-    ) -> dict[str, object]:
+    ) -> dict[str, Any]:
         if self._catalog is not None and provider.vendor:
             try:
                 card = self._catalog.get(provider.vendor, profile.model_name)

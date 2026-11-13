@@ -117,7 +117,6 @@ def test_caller_materials_close_the_server_gap(
 ) -> None:
     container, parser = live_parser
     waiting = parser.parse("请分析我的资料")
-    pprint.pprint(waiting)
     _accepted(waiting, container)
     assert waiting.is_waiting_input
     assert waiting.inputs == []
@@ -146,7 +145,9 @@ def test_requested_json_is_a_deliverable_format(
 ) -> None:
     container, parser = live_parser
     text = "请给出 JSON 格式的结论"
-    assert GoalParser().parse(text).deliverables == []
+    rule_deliverable = GoalParser().parse(text).deliverables[0]
+    assert rule_deliverable.format == "json"
+    assert rule_deliverable.delivery_mode == "inline"
     spec = parser.parse(text)
     _accepted(spec, container)
     assert any(item.format == "json" for item in spec.deliverables)

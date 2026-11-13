@@ -2,12 +2,9 @@ from typing import Any
 
 from enterprise_agent.contracts.routing import RouteDecision, RouteKind
 from enterprise_agent.governance.authorization import AuthorizationPolicy
+from enterprise_agent.orchestration.routing.capabilities import external_flags
 
-_SEARCH = frozenset({"web_search", "web_fetch"})
-_ANALYSIS = frozenset({"analysis", "calculate", "save_report"})
 _SHARED = frozenset({"workspace_read"})
-_ROUTED = _SEARCH | _ANALYSIS | _SHARED
-_RESEARCH_ROLE = "research"
 _ANALYSIS_ROLE = "analysis"
 
 
@@ -22,8 +19,11 @@ def validate_route(decision: RouteDecision, policy: AuthorizationPolicy) -> None
     unknown = required - known
     if unknown:
         raise ValueError(f"unsupported capabilities: {sorted(unknown)}")
-    external = bool(required & _SEARCH)
-    if decision.requires_external_operation != external or decision.requires_realtime_information != external:
+    external, realtime = external_flags(required)
+    if (
+        decision.requires_external_operation != external
+        or decision.requires_realtime_information != realtime
+    ):
         raise ValueError("external flags must match search capabilities")
     if decision.route == RouteKind.DIRECT:
         _validate_direct(decision)
@@ -57,7 +57,12 @@ def _validate_single(decision: RouteDecision, policy: AuthorizationPolicy, requi
 def _validate_multi(decision: RouteDecision, policy: AuthorizationPolicy, required: set[str]) -> None:
     if decision.selected_role:
         raise ValueError("multi route cannot select a single role")
-    if required - _ROUTED or not (required & _SEARCH) or not (required & _ANALYSIS):
-        raise ValueError("multi route requires a search capability and an analysis capability")
-    policy.require_capabilities(_RESEARCH_ROLE, required & (_SEARCH | _SHARED))
-    policy.require_capabilities(_ANALYSIS_ROLE, required & _ANALYSIS)
+    if not required:
+        raise ValueError("multi route requires capabilities")
+    if any(required <= policy.get_role_policy(role).capabilities for role in policy.roles()):
+        raise ValueError("multi route must not be used when one role covers all capabilities")
+    covered = set[Any]().union(
+        *(policy.get_role_policy(role).capabilities & required for role in policy.roles())
+    )
+    if covered != required:
+        raise ValueError("multi route capabilities cannot be covered by registered roles")

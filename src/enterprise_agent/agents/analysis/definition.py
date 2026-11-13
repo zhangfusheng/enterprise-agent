@@ -200,7 +200,14 @@ def _citation_manifest(evidence: list[dict[str, Any]]) -> list[dict[str, str]]:
         document_id = source.get("document_id")
         title = source.get("title")
         url = source.get("url")
-        if not all(isinstance(value, str) and value.strip() for value in (document_id, title, url)):
+        if not (
+            isinstance(document_id, str)
+            and document_id.strip()
+            and isinstance(title, str)
+            and title.strip()
+            and isinstance(url, str)
+            and url.strip()
+        ):
             continue
         manifest.append(
             {

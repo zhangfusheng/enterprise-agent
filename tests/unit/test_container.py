@@ -35,7 +35,7 @@ def test_config_snapshot_uses_each_profiles_provider(container: Container):
     assert snapshot["runtime"]["budgets"]["tool_calls"] == container.settings.max_tool_calls
     assert snapshot["versions"]["policy"] == "agents-v2"
     assert snapshot["versions"]["orchestration"] == "orchestration-v1"
-    assert snapshot["versions"]["goal_prompt"] == "goal-parser-v2"
+    assert snapshot["versions"]["goal_prompt"] == "goal-parser-v4"
     assert snapshot["versions"]["plan_prompt"] == "plan-draft-v1"
     assert snapshot["versions"]["worker_prompt"] == "worker-prompt-v1"
     assert snapshot["versions"]["answer_prompt"] == "answer-prompt-v1"

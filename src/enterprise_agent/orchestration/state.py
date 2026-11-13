@@ -32,6 +32,8 @@ class OrchestrationState(TypedDict):
     summary: NotRequired[str]
     status: NotRequired[RunStatus]
     missing_information: NotRequired[list[str]]
+    awaiting_user_input: NotRequired[bool]
+    parse_provenance: NotRequired[dict[str, Any]]
     budget_used: NotRequired[dict[str, int]]
     replan_count: NotRequired[int]
     cancel_requested: NotRequired[bool]

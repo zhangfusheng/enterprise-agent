@@ -23,10 +23,12 @@ _CATALOG = {"web_search", "web_fetch", "workspace_read", "analysis", "calculate"
 class _Completion:
     def __init__(self, result: object) -> None:
         self.result = result
+        self.calls = 0
         self.temperature: float | None = None
         self.messages: list[object] | None = None
 
     def complete(self, schema, messages, *, temperature: float):
+        self.calls += 1
         self.temperature = temperature
         self.messages = messages
         if isinstance(self.result, Exception):
@@ -109,6 +111,27 @@ def test_server_keeps_caller_materials_and_still_notices_a_gap():
     assert supplied.inputs[0].content == "正文"
 
 
+def test_prompt_keeps_a_goal_when_required_material_is_missing():
+    parser, completion = _parser(
+        {
+            "goals": [
+                {
+                    "id": "goal_read",
+                    "description": "分析用户资料",
+                    "required_capabilities": ["analysis"],
+                }
+            ]
+        }
+    )
+
+    parser.parse("请分析我的资料")
+
+    prompt = _text(completion.messages)
+    assert "缺少资料、参数或其他输入" in prompt
+    assert "不得因此返回空 goals" in prompt
+    assert "服务端根据调用方材料判定" in prompt
+
+
 def test_public_search_does_not_require_caller_reference_materials():
     parser, _completion = _parser(
         {
@@ -127,10 +150,11 @@ def test_public_search_does_not_require_caller_reference_materials():
 
 
 def test_candidate_without_goals_falls_back_even_when_it_reports_a_gap():
-    parser, _completion = _parser({"goals": [], "missing_information": ["还缺范围"]})
+    parser, completion = _parser({"goals": [], "missing_information": ["还缺范围"]})
     spec = parser.parse("请解释幂等性")
     assert spec.goals[0].id == "goal_main"
     assert spec.missing_information == []
+    assert completion.calls == 2
 
 
 def test_timeliness_can_require_search_when_rules_do_not():
@@ -153,7 +177,7 @@ def test_timeliness_can_require_search_when_rules_do_not():
 
 def test_output_format_comes_from_the_candidate():
     text = "请给出 JSON 格式的结论"
-    assert GoalParser().parse(text).deliverables == []
+    assert GoalParser().parse(text).deliverables[0].delivery_mode == "inline"
     parser, _completion = _parser(
         {
             "goals": [
@@ -170,6 +194,7 @@ def test_output_format_comes_from_the_candidate():
     )
     spec = parser.parse(text)
     assert spec.deliverables[0].format == "json"
+    assert spec.deliverables[0].delivery_mode == "inline"
 
 
 def test_request_constraints_replace_anything_in_the_candidate(caplog: pytest.LogCaptureFixture):
@@ -202,12 +227,12 @@ def test_invalid_candidate_falls_back_to_rules(caplog: pytest.LogCaptureFixture)
     parser, _completion = _parser({"goals": [{"id": "goal_bad", "description": "比较方案", "required_capabilities": ["shell"]}]})
     spec = parser.parse(text)
     assert spec.goals[0].id == "goal_main"
-    assert spec.goals[0].required_capabilities == ["analysis"]
+    assert spec.goals[0].required_capabilities == []
     assert "parser=fallback" in caplog.text
     assert f"prompt_version={PROMPT_VERSION}" in caplog.text
     assert "error=ValidationError" in caplog.text
     assert text not in caplog.text
-    assert PROMPT_VERSION == "goal-parser-v2"
+    assert PROMPT_VERSION == "goal-parser-v4"
 
 
 def test_model_failure_falls_back_without_logging_the_request(caplog: pytest.LogCaptureFixture):

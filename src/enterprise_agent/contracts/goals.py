@@ -28,6 +28,7 @@ class Deliverable(BaseModel):
     id: str
     description: str
     format: Literal["text", "markdown", "json"] = "text"
+    delivery_mode: Literal["inline", "artifact"] = "inline"
     path: str | None = None
 
 

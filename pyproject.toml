@@ -52,8 +52,8 @@ packages = ["src/enterprise_agent"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
-addopts = "-ra"
+pythonpath = [".", "src"]
+addopts = "-ra --import-mode=importlib"
 asyncio_mode = "auto"
 
 [tool.ruff]

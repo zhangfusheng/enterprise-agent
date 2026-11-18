@@ -1,0 +1,84 @@
+- id: R01-material-missing
+  kind: material
+  request: "请分析资料"
+  inputs: []
+  expected_status: missing
+- id: R02-material-satisfied
+  kind: material
+  request: "请分析资料"
+  inputs:
+    - name: notes
+      content: "正文"
+  expected_status: satisfied
+- id: R03-comparison-missing
+  kind: comparison_subject
+  minimum_items: 2
+  request: "比较两个方案"
+  inputs:
+    - name: option-a
+      content: "方案 A"
+  expected_status: missing
+- id: R04-comparison-satisfied
+  kind: comparison_subject
+  minimum_items: 2
+  request: "比较两个方案"
+  inputs:
+    - name: option-a
+      content: "方案 A"
+    - name: option-b
+      content: "方案 B"
+  expected_status: satisfied
+- id: R05-calculation-missing
+  kind: calculation_operand
+  minimum_items: 2
+  request: "计算增长率"
+  inputs: []
+  expected_status: missing
+- id: R06-calculation-satisfied
+  kind: calculation_operand
+  minimum_items: 2
+  request: "根据 10 和 12 计算增长率"
+  inputs: []
+  expected_status: satisfied
+- id: R07-time-range-missing
+  kind: time_range
+  request: "分析趋势"
+  inputs: []
+  expected_status: missing
+- id: R08-time-range-satisfied
+  kind: time_range
+  request: "分析最近 30 天趋势"
+  inputs: []
+  expected_status: satisfied
+- id: R09-template-missing
+  kind: template
+  request: "生成报告"
+  inputs: []
+  expected_status: missing
+- id: R10-template-satisfied
+  kind: template
+  request: "按模板：# 标题 生成报告"
+  inputs: []
+  expected_status: satisfied
+- id: R11-destination-missing
+  kind: destination
+  request: "生成报告"
+  inputs: []
+  expected_status: missing
+- id: R12-destination-satisfied
+  kind: destination
+  request: "保存到 reports/result.md"
+  inputs: []
+  expected_status: satisfied
+- id: R13-clarification-missing
+  kind: clarification
+  request: "继续处理"
+  inputs: []
+  expected_status: missing
+- id: R14-clarification-satisfied
+  kind: clarification
+  request: "继续处理"
+  inputs:
+    - name: user_input
+      content: "采用方案 A"
+  expected_status: satisfied

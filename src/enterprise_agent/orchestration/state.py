@@ -13,6 +13,7 @@ class PlanHistoryState(TypedDict):
 
 
 class OrchestrationState(TypedDict):
+    state_version: int
     run_id: str
     tenant_id: str
     user_id: str
@@ -26,6 +27,7 @@ class OrchestrationState(TypedDict):
     goal_spec: NotRequired[dict[str, Any]]
     route: NotRequired[dict[str, Any]]
     plan: NotRequired[dict[str, Any]]
+    plan_provenance: NotRequired[dict[str, Any]]
     plan_history: NotRequired[list[PlanHistoryState]]
     task_results: NotRequired[dict[str, dict[str, Any]]]
     result: NotRequired[dict[str, Any]]

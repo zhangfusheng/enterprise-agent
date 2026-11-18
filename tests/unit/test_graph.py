@@ -5,6 +5,7 @@ import pytest
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 from tests.support.harness import offline_harness
+from tests.support.parsers import TwoStageMultiGoalParser
 
 from enterprise_agent.agents.answer.definition import AnswerAgent
 from enterprise_agent.agents.harness.roles import ANSWER
@@ -193,6 +194,58 @@ def test_waiting_input_restarts_from_all_persisted_answers():
     final = graph.invoke(all_answers, config)
     assert final["status"] == RunStatus.SUCCEEDED
     assert final["inputs"] == all_answers["inputs"]
+    assert final["parse_provenance"]["parser"] == "legacy"
+    assert final["parse_provenance"]["compiler_version"] == "legacy"
+
+
+def test_multi_goal_identity_survives_rebuilt_graphs_and_repeated_interrupts():
+    parser = TwoStageMultiGoalParser()
+    saver = InMemorySaver()
+    deps = GraphDependencies(
+        WorkerRegistry((_ScriptedWorker("analysis", {}),)),
+        _policy(),
+        _limits(),
+        max_tasks=12,
+        max_replans=2,
+        parser=parser,
+        answer_agent=_answer_agent(),
+    )
+    config = {"configurable": {"thread_id": "wait-multi"}}
+    expected_goals = ["goal_prepare", "goal_calculate"]
+
+    first_graph = build_graph(deps, saver)
+    first = first_graph.invoke(_state("整理两段资料并计算指标"), config)
+    first_state = first_graph.get_state(config).values
+    assert first["__interrupt__"]
+    assert [item["id"] for item in first_state["goal_spec"]["goals"]] == expected_goals
+    assert first_state["inputs"] == []
+    assert "route" not in first_state
+    for key in ("goal_spec", "inputs", "missing_information", "parse_provenance"):
+        assert first[key] == first_state[key]
+
+    second_graph = build_graph(deps, saver)
+    one_answer = _state("整理两段资料并计算指标")
+    one_answer["inputs"] = [{"name": "user_input", "content": "第一段"}]
+    second = second_graph.invoke(one_answer, config)
+    second_state = second_graph.get_state(config).values
+    assert second["__interrupt__"]
+    assert [item["id"] for item in second_state["goal_spec"]["goals"]] == expected_goals
+    assert second_state["inputs"] == one_answer["inputs"]
+    for key in ("goal_spec", "inputs", "missing_information", "parse_provenance"):
+        assert second[key] == second_state[key]
+
+    third_graph = build_graph(deps, saver)
+    all_answers = _state("整理两段资料并计算指标")
+    all_answers["inputs"] = [
+        {"name": "user_input", "content": "第一段"},
+        {"name": "user_input", "content": "第二段"},
+    ]
+    final = third_graph.invoke(all_answers, config)
+    assert [item["id"] for item in final["goal_spec"]["goals"]] == expected_goals
+    assert final["inputs"] == all_answers["inputs"]
+    assert final["parse_provenance"]["parser"] == "rules"
+    assert final["status"] == RunStatus.SUCCEEDED
+    assert parser.seen_inputs == [[], one_answer["inputs"], all_answers["inputs"]]
 
 
 def test_failed_dependency_skips_downstream_and_retries_only_the_failure():

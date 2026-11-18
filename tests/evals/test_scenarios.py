@@ -171,7 +171,7 @@ def test_run_pins_versions_and_empty_model_metrics(container):
     versions = state["config_snapshot"]["versions"]
     assert versions["policy"] == "agents-v2"
     assert versions["orchestration"] == "orchestration-v1"
-    assert versions["goal_prompt"] == "goal-parser-v4"
+    assert versions["goal_prompt"] == "goal-parser-v5"
     assert versions["plan_prompt"] == "plan-draft-v1"
     metrics = state["metrics"]
     assert metrics["model_calls"] == 1

@@ -11,6 +11,10 @@ from enterprise_agent.bootstrap.settings import Settings
 from enterprise_agent.contracts.events import EventType
 from enterprise_agent.contracts.plans import GlobalPlan
 from enterprise_agent.contracts.runs import RunStatus
+from enterprise_agent.contracts.state import (
+    STATE_SCHEMA_VERSION,
+    migrate_orchestration_state,
+)
 from enterprise_agent.infrastructure.database.models import RunRow
 from enterprise_agent.infrastructure.observability.logging import log_orchestration
 from enterprise_agent.infrastructure.observability.metrics import (
@@ -21,9 +25,10 @@ from enterprise_agent.infrastructure.observability.metrics import (
 from enterprise_agent.infrastructure.observability.tracing import trace, tracing_scope
 from enterprise_agent.infrastructure.repositories.runs import OutcomeRecord, RunOutcome
 from enterprise_agent.orchestration.graph import GraphDependencies, build_graph
-from enterprise_agent.orchestration.planning.llm_planner import LLMPlanner, plan_trace
+from enterprise_agent.orchestration.planning.llm_planner import LLMPlanner
+from enterprise_agent.orchestration.routing.errors import GoalSpecInvariantError
 from enterprise_agent.orchestration.routing.llm_parser import LLMGoalParser, StructuredGoalModel
-from enterprise_agent.orchestration.routing.parser import GoalParser, RequestParser, parser_trace
+from enterprise_agent.orchestration.routing.parser import GoalParser, RequestParser
 from enterprise_agent.orchestration.state import OrchestrationState, PlanHistoryState
 from enterprise_agent.runtime.lease_heartbeat import LeaseHeartbeat
 from enterprise_agent.runtime.lifecycle import ALLOWED_TRANSITIONS, InvalidTransition
@@ -40,10 +45,12 @@ _TERMINAL = frozenset(status for status, allowed in ALLOWED_TRANSITIONS.items() 
 _STARTABLE = frozenset({RunStatus.PENDING, RunStatus.WAITING_INPUT})
 _COMPLETED = frozenset({RunStatus.SUCCEEDED, RunStatus.PARTIAL})
 _STATE_KEYS = (
+    "state_version",
     "goal_spec",
     "inputs",
     "route",
     "plan",
+    "plan_provenance",
     "plan_history",
     "task_results",
     "result",
@@ -216,6 +223,7 @@ class _RunExecution:
         # from durable state handles both cases and never resumes a finished
         # graph with Command(resume=...).
         state: OrchestrationState = {
+            "state_version": STATE_SCHEMA_VERSION,
             "run_id": self.run_id,
             "tenant_id": self.tenant_id,
             "user_id": row.user_id,
@@ -319,6 +327,7 @@ class _RunExecution:
             RunOutcome(
                 status=RunStatus.WAITING_INPUT,
                 state={
+                    "state_version": STATE_SCHEMA_VERSION,
                     "goal_spec": dict(raw_spec),
                     "inputs": list(raw_inputs),
                     "missing_information": list(missing),
@@ -343,7 +352,14 @@ class _RunExecution:
         )
 
     def _record_failure(self, exc: Exception) -> None:
-        logger.exception("Run %s failed during execution", self.run_id)
+        if isinstance(exc, GoalSpecInvariantError):
+            logger.error(
+                "Run %s failed during goal compilation: %s",
+                self.run_id,
+                type(exc).__name__,
+            )
+        else:
+            logger.exception("Run %s failed during execution", self.run_id)
         message = f"{type(exc).__name__}: {exc}"
         if len(message) > _ERROR_LIMIT:
             message = message[: _ERROR_LIMIT - 3] + "..."
@@ -352,6 +368,7 @@ class _RunExecution:
                 RunOutcome(
                     status=RunStatus.FAILED,
                     state={
+                        "state_version": STATE_SCHEMA_VERSION,
                         "error": type(exc).__name__,
                         "error_message": message,
                         **self._observation({}),
@@ -497,23 +514,27 @@ def _resolved_versions(final: Mapping[str, Any], planner: LLMPlanner | None) -> 
             "parser": provenance.get("parser"),
             "parser_model": provenance.get("model_version"),
             "parser_prompt": provenance.get("prompt_version"),
+            "goal_compiler": provenance.get("compiler_version", "legacy"),
         }
     else:
-        parser = parser_trace()
         versions = {
-            "parser": parser.name,
-            "parser_model": parser.model_version,
-            "parser_prompt": parser.prompt_version,
+            "parser": "legacy",
+            "parser_model": None,
+            "parser_prompt": None,
+            "goal_compiler": "legacy",
         }
     if "plan" not in final:
         return versions
     if planner is None:
         versions["planner"] = "template"
         return versions
-    trace = plan_trace()
-    versions["planner"] = trace.name
-    versions["planner_model"] = trace.model_version
-    versions["planner_prompt"] = trace.prompt_version
+    raw_plan_provenance = final.get("plan_provenance")
+    if not isinstance(raw_plan_provenance, Mapping):
+        versions["planner"] = "legacy"
+        return versions
+    versions["planner"] = raw_plan_provenance.get("planner")
+    versions["planner_model"] = raw_plan_provenance.get("model_version")
+    versions["planner_prompt"] = raw_plan_provenance.get("prompt_version")
     return versions
 
 
@@ -529,7 +550,7 @@ def _state_data(row: RunRow) -> dict[str, Any]:
     raw = row.state_json or {}
     if not isinstance(raw, Mapping):
         raise TypeError("run state_json must be a mapping")
-    return dict(raw)
+    return migrate_orchestration_state(raw)
 
 
 def _budget(final: Mapping[str, Any], row: RunRow) -> dict[str, Any] | None:

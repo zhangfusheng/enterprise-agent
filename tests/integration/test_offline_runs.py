@@ -1,7 +1,10 @@
+from tests.support.parsers import TwoStageMultiGoalParser
+
 from enterprise_agent.application.execute_run import execute_run
 from enterprise_agent.application.submit_run import submit_run
 from enterprise_agent.contracts.context import IdentityContext
 from enterprise_agent.contracts.runs import RunCreate, RunStatus
+from enterprise_agent.contracts.state import STATE_SCHEMA_VERSION
 
 
 def _run(container, request: RunCreate):
@@ -48,19 +51,83 @@ def test_missing_input_is_checkpointed_and_resumed(container):
     execute_run(container, run_id, "worker-a")
     assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.WAITING_INPUT
     waiting_state = container.runs.get_run_unscoped(run_id).state_json
+    assert waiting_state["state_version"] == STATE_SCHEMA_VERSION
     assert waiting_state["goal_spec"]["goals"][0]["description"] == "请分析我的资料"
     assert waiting_state["goal_spec"]["missing_information"] == ["请提供要分析的资料或文件。"]
+    assert waiting_state["goal_spec"]["input_requirements"] == [
+        {
+            "id": "requirement_caller_material",
+            "kind": "material",
+            "description": "请提供要分析的资料或文件。",
+            "goal_ids": ["goal_main"],
+            "required": True,
+            "minimum_items": 1,
+            "status": "missing",
+            "satisfied_by": [],
+            "source": "rules",
+        }
+    ]
     assert waiting_state["parse_provenance"] == {
         "parser": "rules",
         "model_version": None,
         "prompt_version": None,
+        "compiler_version": "goal-compiler-v1",
+        "attempts": 0,
+        "fallback_reason": None,
     }
     assert waiting_state["resolved_versions"]["parser"] == "rules"
+    assert waiting_state["resolved_versions"]["goal_compiler"] == "goal-compiler-v1"
     container.runs.update_run("tenant-a", run_id, {"additional_input": "这是补充资料", "input": "请分析我的资料"})
     container.runs.requeue_work(run_id)
     assert container.runs.claim_work("worker-a", 30) == run_id
     execute_run(container, run_id, "worker-a")
     assert container.runs.get_run_view("tenant-a", run_id).status in {RunStatus.PARTIAL, RunStatus.SUCCEEDED}
+
+
+def test_multi_goal_repeated_resume_is_stable_across_worker_graphs(container, monkeypatch):
+    parser = TwoStageMultiGoalParser()
+    monkeypatch.setattr(
+        "enterprise_agent.application.execute_run._request_parser",
+        lambda *_args, **_kwargs: parser,
+    )
+    original = "整理两段资料并计算指标"
+    expected_goals = ["goal_prepare", "goal_calculate"]
+    run_id = submit_run(
+        container.runs,
+        IdentityContext(tenant_id="tenant-a", user_id="user-a", is_authenticated=True),
+        RunCreate(input=original),
+    )
+
+    assert container.runs.claim_work("worker-a", 30) == run_id
+    execute_run(container, run_id, "worker-a")
+    first = container.runs.get_run_unscoped(run_id).state_json
+    assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.WAITING_INPUT
+    assert [item["id"] for item in first["goal_spec"]["goals"]] == expected_goals
+    assert first["inputs"] == []
+    assert "route" not in first
+
+    container.runs.append_input("tenant-a", run_id, "第一段")
+    container.runs.requeue_work(run_id, tenant_id="tenant-a")
+    assert container.runs.claim_work("worker-b", 30) == run_id
+    execute_run(container, run_id, "worker-b")
+    second = container.runs.get_run_unscoped(run_id).state_json
+    assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.WAITING_INPUT
+    assert [item["id"] for item in second["goal_spec"]["goals"]] == expected_goals
+    assert [item["content"] for item in second["inputs"]] == ["第一段"]
+
+    container.runs.append_input("tenant-a", run_id, "第二段")
+    container.runs.requeue_work(run_id, tenant_id="tenant-a")
+    assert container.runs.claim_work("worker-c", 30) == run_id
+    execute_run(container, run_id, "worker-c")
+    final = container.runs.get_run_unscoped(run_id).state_json
+    assert container.runs.get_run_view("tenant-a", run_id).status in {
+        RunStatus.PARTIAL,
+        RunStatus.SUCCEEDED,
+    }
+    assert container.runs.get_run_unscoped(run_id).input_text == original
+    assert [item["id"] for item in final["goal_spec"]["goals"]] == expected_goals
+    assert [item["content"] for item in final["inputs"]] == ["第一段", "第二段"]
+    assert final["parse_provenance"]["compiler_version"] == "goal-compiler-v1"
 
 
 def test_supplemental_inputs_are_append_only(container):

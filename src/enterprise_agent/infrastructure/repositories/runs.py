@@ -19,6 +19,7 @@ from enterprise_agent.contracts.sessions import (
     SessionSummary,
     SessionView,
 )
+from enterprise_agent.contracts.state import STATE_SCHEMA_VERSION
 from enterprise_agent.infrastructure.database.models import (
     ArtifactRow,
     ChatMessageRow,
@@ -1242,6 +1243,7 @@ def _run_row(
         route=None,
         summary=None,
         state_json={
+            "state_version": STATE_SCHEMA_VERSION,
             "input": request.input,
             "inputs": request.inputs,
             "constraints": request.constraints,

@@ -23,10 +23,15 @@ from enterprise_agent.orchestration.planning.identity import (
     logical_task_key,
     reconcile_plan,
 )
-from enterprise_agent.orchestration.planning.llm_planner import LLMPlanner, plan_trace
+from enterprise_agent.orchestration.planning.llm_planner import (
+    LLMPlanner,
+    PlanResult,
+    PlanTrace,
+)
 from enterprise_agent.orchestration.planning.planner import GlobalPlanner
 from enterprise_agent.orchestration.planning.validation import validate_plan
-from enterprise_agent.orchestration.routing.parser import GoalParser, RequestParser, parser_trace
+from enterprise_agent.orchestration.routing.parser import GoalParser, RequestParser
+from enterprise_agent.orchestration.routing.results import parse_request
 from enterprise_agent.orchestration.routing.router import Router
 from enterprise_agent.orchestration.routing.spec_validation import validate_goal_spec
 from enterprise_agent.orchestration.routing.validation import validate_route
@@ -104,11 +109,17 @@ class _OrchestrationNodes:
     @_traced("parse_route")
     def parse_route(self, state: OrchestrationState) -> dict:
         inputs = list(state.get("inputs", []))
+        parsed = parse_request(
+            self.deps.parser,
+            state["input_text"],
+            inputs,
+            state.get("constraints", {}),
+        )
         spec = validate_goal_spec(
-            self.deps.parser.parse(state["input_text"], inputs, state.get("constraints", {})),
+            parsed.spec,
             self.deps.policy,
         )
-        provenance = _parse_provenance()
+        provenance = parsed.provenance.model_dump(mode="json")
         if spec.is_waiting_input:
             self._log(state, "parse_route", **_parse_fields(spec, state, provenance))
             return {
@@ -212,8 +223,8 @@ class _OrchestrationNodes:
         }
         history = [PlanHistoryEntry.model_validate(item) for item in state.get("plan_history", [])]
         unmet = _unmet(state.get("task_results", {}))
-        created = self._create_plan(state, spec, route, len(history) + 1, completed, unmet)
-        reconciliation = reconcile_plan(created, previous, results)
+        planned = self._create_plan(state, spec, route, len(history) + 1, completed, unmet)
+        reconciliation = reconcile_plan(planned.plan, previous, results)
         global_plan = reconciliation.plan
         results = reconciliation.task_results
         validate_plan(global_plan, {goal.id for goal in spec.goals}, self.deps.policy, self.deps.max_tasks)
@@ -225,21 +236,26 @@ class _OrchestrationNodes:
             task_actions=reconciliation.task_actions,
             retired_task_ids=list(reconciliation.retired_task_ids),
         )
-        trace = plan_trace() if self.deps.draft_planner is not None else None
+        provenance = planned.provenance
         self._log(
             state,
             "plan",
             plan_version=global_plan.plan_version,
             task_count=len(global_plan.tasks),
-            planner=trace.name if trace else "template",
-            model_version=trace.model_version if trace else None,
-            prompt_version=trace.prompt_version if trace else None,
+            planner=provenance.name,
+            model_version=provenance.model_version,
+            prompt_version=provenance.prompt_version,
             task_mapping=reconciliation.task_mapping,
             task_actions=reconciliation.task_actions,
             retired_task_ids=list(reconciliation.retired_task_ids),
         )
         return {
             "plan": global_plan.model_dump(mode="json"),
+            "plan_provenance": {
+                "planner": provenance.name,
+                "model_version": provenance.model_version,
+                "prompt_version": provenance.prompt_version,
+            },
             "plan_history": [item.model_dump(mode="json") for item in (*history, entry)],
             "task_results": {
                 key: value.model_dump(mode="json") for key, value in results.items()
@@ -254,10 +270,27 @@ class _OrchestrationNodes:
         plan_version: int,
         completed: set[str],
         unmet: list[str],
-    ) -> GlobalPlan:
+    ) -> PlanResult:
         if self.deps.draft_planner is None:
-            return self.deps.planner.create(state["run_id"], spec, route, plan_version, completed)
-        return self.deps.draft_planner.create(
+            return PlanResult(
+                self.deps.planner.create(
+                    state["run_id"], spec, route, plan_version, completed
+                ),
+                PlanTrace(),
+            )
+        create_result = getattr(self.deps.draft_planner, "create_result", None)
+        if callable(create_result):
+            return create_result(
+                state["run_id"],
+                spec,
+                route,
+                plan_version,
+                completed,
+                limits=self.deps.limits,
+                budget_used=dict(state.get("budget_used", {})),
+                unmet=unmet,
+            )
+        legacy_plan = self.deps.draft_planner.create(
             state["run_id"],
             spec,
             route,
@@ -267,6 +300,7 @@ class _OrchestrationNodes:
             budget_used=dict(state.get("budget_used", {})),
             unmet=unmet,
         )
+        return PlanResult(legacy_plan, PlanTrace("legacy"))
 
     @_traced("execute")
     def execute(self, state: OrchestrationState) -> dict:
@@ -463,19 +497,10 @@ def _unmet(results: dict[str, dict[str, Any]]) -> list[str]:
     return found
 
 
-def _parse_provenance() -> dict[str, str | None]:
-    trace = parser_trace()
-    return {
-        "parser": trace.name,
-        "model_version": trace.model_version,
-        "prompt_version": trace.prompt_version,
-    }
-
-
 def _parse_fields(
     spec: GoalSpec,
     state: OrchestrationState,
-    provenance: dict[str, str | None],
+    provenance: dict[str, Any],
 ) -> dict[str, object]:
     return {
         **provenance,

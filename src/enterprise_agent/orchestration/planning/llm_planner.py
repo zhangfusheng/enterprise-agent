@@ -1,6 +1,5 @@
 """Model-backed planning. The model proposes a draft; the server accepts it."""
 
-from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Annotated, Any, cast
 
@@ -55,11 +54,10 @@ class PlanTrace:
     prompt_version: str | None = None
 
 
-_TRACE: ContextVar[PlanTrace | None] = ContextVar("plan_trace", default=None)
-
-
-def plan_trace() -> PlanTrace:
-    return _TRACE.get() or PlanTrace()
+@dataclass(frozen=True, slots=True)
+class PlanResult:
+    plan: GlobalPlan
+    provenance: PlanTrace
 
 
 class LLMPlanner:
@@ -110,10 +108,35 @@ class LLMPlanner:
         budget_used: dict[str, int] | None = None,
         unmet: list[str] | None = None,
     ) -> GlobalPlan:
+        return self.create_result(
+            run_id,
+            spec,
+            route,
+            plan_version,
+            completed,
+            limits=limits,
+            budget_used=budget_used,
+            unmet=unmet,
+        ).plan
+
+    def create_result(
+        self,
+        run_id: str,
+        spec: GoalSpec,
+        route: RouteDecision,
+        plan_version: int = 1,
+        completed: set[str] | None = None,
+        *,
+        limits: BudgetLimits,
+        budget_used: dict[str, int] | None = None,
+        unmet: list[str] | None = None,
+    ) -> PlanResult:
         done = set(completed or ())
         if not _needs_model(spec, route):
-            _TRACE.set(PlanTrace())
-            return self.templates.create(run_id, spec, route, plan_version, done)
+            return PlanResult(
+                self.templates.create(run_id, spec, route, plan_version, done),
+                PlanTrace(),
+            )
         produced = False
         try:
             requested = tuple(sorted(_requested_capabilities(spec) & self._capabilities)) or self._capability_names
@@ -153,8 +176,14 @@ class LLMPlanner:
         except Exception as exc:
             return self._fall_back(run_id, spec, route, plan_version, done, exc, produced)
         self._record("success")
-        _TRACE.set(PlanTrace("llm", model_version=self._model_version, prompt_version=self._prompt_version))
-        return plan
+        return PlanResult(
+            plan,
+            PlanTrace(
+                "llm",
+                model_version=self._model_version,
+                prompt_version=self._prompt_version,
+            ),
+        )
 
     def _fall_back(
         self,
@@ -165,12 +194,11 @@ class LLMPlanner:
         completed: set[str],
         exc: Exception,
         produced: bool,
-    ) -> GlobalPlan:
+    ) -> PlanResult:
         self._record(call_outcome(exc, produced=produced))
         record_fallback("plan")
         plan = self.templates.create(run_id, spec, route, plan_version, completed)
         trace = PlanTrace("fallback", model_version=self._model_version, prompt_version=self._prompt_version)
-        _TRACE.set(trace)
         log_orchestration(
             "plan",
             planner=trace.name,
@@ -178,7 +206,7 @@ class LLMPlanner:
             prompt_version=trace.prompt_version,
             error=type(exc).__name__,
         )
-        return plan
+        return PlanResult(plan, trace)
 
     def _record(self, outcome: CallOutcome) -> None:
         observation = getattr(self._completion, "last_observation", None)
@@ -442,4 +470,4 @@ def _messages(
     return [SystemMessage(content=_INSTRUCTIONS), HumanMessage(content=body)]
 
 
-__all__ = ["PROMPT_VERSION", "LLMPlanner", "compile_draft", "plan_trace"]
+__all__ = ["PROMPT_VERSION", "LLMPlanner", "PlanResult", "PlanTrace", "compile_draft"]

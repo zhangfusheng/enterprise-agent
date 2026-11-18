@@ -8,8 +8,10 @@
 | recovery | 租约竞争、心跳续租、fencing token、原子提交、死信 | `uv run pytest tests/recovery` | SQLite |
 | security | 租户隔离、路径穿越、SSRF 私网地址 | `uv run pytest tests/security` | 离线 |
 | workflows | 四个 examples 的端到端入口 | `uv run pytest tests/workflows` | SQLite + fixture |
-| evals | 路由数据集和 grader | `uv run python -m evals.run_offline` | 离线 |
+| evals | 路由数据集、七类输入需求、Candidate 错误边界、状态迁移、Provenance 隔离 | `uv run python -m evals.run_offline && uv run pytest tests/evals` | 离线 |
 | real | OpenAI-compatible/Anthropic 与 Tavily/Doubao Search API | 显式 `EA_REAL_TESTS=1` 后另行运行 | 不属于无凭证 CI |
+
+最近一次真实模型结果见 [2026-11-15 真实模型评测](evals/2026-11-15-real-model-matrix.md)。
 
 提示注入用例只证明指定输入下的权限边界；不能据此声称彻底解决提示注入。
 

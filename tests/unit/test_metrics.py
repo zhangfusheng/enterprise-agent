@@ -8,7 +8,9 @@ from enterprise_agent.infrastructure.observability.metrics import (
     begin_run_metrics,
     metrics_snapshot,
     quote_cost,
+    record_fallback,
     record_model_call,
+    record_parse_rejection,
     record_retry,
     reset_run_metrics,
 )
@@ -48,6 +50,38 @@ def test_retry_is_separate_from_model_failures():
     assert snapshot["cost_usd"] == 0
     assert snapshot["structured_output_failures"] == 0
     assert snapshot["fallbacks"] == 0
+    assert snapshot["parse_rejection_counts"] == {
+        "transport": 0,
+        "schema": 0,
+        "semantic": 0,
+        "policy": 0,
+        "invariant": 0,
+    }
+
+
+def test_parse_rejections_and_fallback_reasons_are_low_cardinality():
+    token = begin_run_metrics()
+    try:
+        record_parse_rejection("schema", 1)
+        record_parse_rejection("semantic", 2)
+        record_fallback("parse", "semantic")
+        snapshot = metrics_snapshot()
+    finally:
+        reset_run_metrics(token)
+
+    assert snapshot["parse_rejections"] == [
+        {"reason": "schema", "attempt": 1},
+        {"reason": "semantic", "attempt": 2},
+    ]
+    assert snapshot["parse_rejection_counts"] == {
+        "transport": 0,
+        "schema": 1,
+        "semantic": 1,
+        "policy": 0,
+        "invariant": 0,
+    }
+    assert snapshot["fallbacks"] == 1
+    assert snapshot["fallback_reasons"] == {"parse:semantic": 1}
 
 
 class _Candidate(BaseModel):
@@ -106,5 +140,6 @@ def test_rejected_plan_is_a_fallback_after_a_successful_model_call():
     assert snapshot["calls"][0]["outcome"] == "success"
     assert snapshot["structured_output_failures"] == 0
     assert snapshot["fallbacks"] == 1
+    assert snapshot["fallback_reasons"] == {"plan": 1}
     assert snapshot["fallback_rate"] == 1
     assert snapshot["structured_output_failure_rate"] == 0

@@ -20,6 +20,15 @@ from pydantic import ValidationError
 
 CallOutcome = Literal["success", "structured_output_failure", "error"]
 ResearchOutcome = Literal["success", "error", "fallback"]
+ParseRejectionReason = Literal["transport", "schema", "semantic", "policy", "invariant"]
+
+_PARSE_REJECTION_REASONS: tuple[ParseRejectionReason, ...] = (
+    "transport",
+    "schema",
+    "semantic",
+    "policy",
+    "invariant",
+)
 
 _INPUT_PRICE = "input_usd_per_million"
 _OUTPUT_PRICE = "output_usd_per_million"
@@ -61,11 +70,18 @@ class ResearchObservation:
     error_code: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class ParseRejection:
+    reason: ParseRejectionReason
+    attempt: int
+
+
 class RunMetrics:
     def __init__(self) -> None:
         self.calls: list[ModelCall] = []
         self.research_events: list[ResearchObservation] = []
         self.fallbacks: list[str] = []
+        self.parse_rejections: list[ParseRejection] = []
         self.retries = 0
 
     def add_call(self, call: ModelCall) -> None:
@@ -76,8 +92,14 @@ class RunMetrics:
         if len(self.research_events) < 256:
             self.research_events.append(event)
 
-    def add_fallback(self, stage: str) -> None:
-        self.fallbacks.append(stage)
+    def add_fallback(self, stage: str, reason: ParseRejectionReason | None = None) -> None:
+        self.fallbacks.append(stage if reason is None else f"{stage}:{reason}")
+
+    def add_parse_rejection(self, rejection: ParseRejection) -> None:
+        # Goal parsing currently has at most two attempts. Keep a defensive
+        # bound so malformed callers cannot create unbounded telemetry.
+        if len(self.parse_rejections) < 16:
+            self.parse_rejections.append(rejection)
 
     def add_retry(self) -> None:
         self.retries += 1
@@ -88,6 +110,13 @@ class RunMetrics:
         costs = [call.cost_usd for call in self.calls]
         cost: float | None = None if any(item is None for item in costs) else float(sum(item or 0 for item in costs))
         research_events = [asdict(event) for event in self.research_events]
+        rejection_counts = {
+            reason: sum(1 for item in self.parse_rejections if item.reason == reason)
+            for reason in _PARSE_REJECTION_REASONS
+        }
+        fallback_reasons: dict[str, int] = {}
+        for reason in self.fallbacks:
+            fallback_reasons[reason] = fallback_reasons.get(reason, 0) + 1
         return {
             "model_calls": model_calls,
             "structured_output_failures": structured,
@@ -99,6 +128,9 @@ class RunMetrics:
             "cost_usd": cost,
             "structured_output_failure_rate": _rate(structured, model_calls),
             "fallback_rate": _rate(len(self.fallbacks), model_calls),
+            "fallback_reasons": fallback_reasons,
+            "parse_rejections": [asdict(item) for item in self.parse_rejections],
+            "parse_rejection_counts": rejection_counts,
             "calls": [asdict(call) for call in self.calls],
             "research": _research_snapshot(self.research_events, research_events),
         }
@@ -185,11 +217,18 @@ def record_model_call(
     )
 
 
-def record_fallback(stage: str) -> None:
+def record_fallback(stage: str, reason: ParseRejectionReason | None = None) -> None:
     metrics = _METRICS.get()
     if metrics is None:
         return
-    metrics.add_fallback(stage)
+    metrics.add_fallback(stage, reason)
+
+
+def record_parse_rejection(reason: ParseRejectionReason, attempt: int) -> None:
+    metrics = _METRICS.get()
+    if metrics is None:
+        return
+    metrics.add_parse_rejection(ParseRejection(reason=reason, attempt=max(1, attempt)))
 
 
 def record_retry() -> None:

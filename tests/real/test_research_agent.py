@@ -58,7 +58,9 @@ def live_research(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Containe
             artifact_root=root / "artifacts",
             search_primary_provider="tavily",
             search_fallback_providers="",
-        )
+            research_plan_max_concurrency=1,
+        ),
+        initialize_db=True,
     )
     profile = container.models.profile_for_role("research")
     if profile.provider == "offline":
@@ -123,7 +125,12 @@ def _execute(container: Container, task: TaskSpec) -> tuple[AgentResult, BudgetL
         workspace_root=".",
         allowed_roles=container.policy.roles(),
         allowed_tools=container.policy.tools(),
-        metadata={"role": "research", "scopes": container.workers.tool_scopes()},
+        metadata={
+            "role": "research",
+            "scopes": container.workers.tool_scopes(),
+            "external_network_allowed": container.settings.allow_external_network,
+            "network_mode": "external",
+        },
     )
     ledger.consume("agents")
     ledger.consume("steps")

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from enterprise_agent.contracts.goals import Goal, GoalSpec
+from enterprise_agent.contracts.goals import Goal, GoalSpec, InputRequirement
 from enterprise_agent.contracts.results import AgentResult, ResultStatus
 from enterprise_agent.models.config import ModelConfig
 from enterprise_agent.models.validation import ModelConfigError, validate_model_config
@@ -10,6 +10,24 @@ from enterprise_agent.models.validation import ModelConfigError, validate_model_
 def test_goal_ids_are_unique():
     with pytest.raises(ValidationError):
         GoalSpec(goals=[Goal(id="goal_one", description="one"), Goal(id="goal_one", description="two")])
+
+
+def test_goal_spec_serializes_structured_input_requirements():
+    spec = GoalSpec(
+        goals=[Goal(id="goal_main", description="analyze material")],
+        input_requirements=[
+            InputRequirement(
+                id="requirement_material",
+                kind="material",
+                description="material is required",
+                goal_ids=["goal_main"],
+                status="missing",
+                source="server",
+            )
+        ],
+    )
+
+    assert GoalSpec.model_validate_json(spec.model_dump_json()) == spec
 
 
 def test_agent_result_is_structured():

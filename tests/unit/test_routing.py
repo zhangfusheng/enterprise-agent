@@ -37,6 +37,17 @@ def test_direct_route_has_no_external_capability():
     validate_route(decision, _policy())
 
 
+def test_rule_parser_returns_spec_and_provenance_atomically():
+    parser = GoalParser()
+
+    parsed = parser.parse_result("请解释幂等性")
+
+    assert parsed.spec == parser.parse("请解释幂等性")
+    assert parsed.provenance.parser == "rules"
+    assert parsed.provenance.attempts == 0
+    assert parsed.provenance.compiler_version == "goal-compiler-v1"
+
+
 def test_network_permission_does_not_create_search_demand():
     spec = GoalParser().parse("请解释幂等性", constraints={"allow_external_network": True})
     assert spec.constraints.allow_external_network is True
@@ -63,6 +74,9 @@ def test_analysis_does_not_need_workspace_read_to_accept_supplied_material():
     assert decision.route == RouteKind.SINGLE
     assert decision.selected_role == "analysis"
     assert decision.required_capabilities == ["analysis"]
+    assert spec.input_requirements[0].source == "rules"
+    assert spec.input_requirements[0].status == "satisfied"
+    assert spec.input_requirements[0].satisfied_by == ["material:1:user_input"]
     validate_route(decision, _policy())
 
 
@@ -193,7 +207,9 @@ def test_waiting_input_is_not_a_route():
 def test_parser_marks_missing_user_material():
     spec = GoalParser().parse("请分析我的资料")
     assert spec.is_waiting_input
-    assert spec.missing_information
+    assert spec.missing_information == ["请提供要分析的资料或文件。"]
+    assert spec.input_requirements[0].source == "rules"
+    assert spec.input_requirements[0].status == "missing"
 
 
 def test_goal_spec_requires_a_goal_or_explicit_clarification():

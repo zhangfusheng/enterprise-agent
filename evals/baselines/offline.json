@@ -1,6 +1,8 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "dataset": "offline.yaml",
-  "expected_route_accuracy": 1.0
+  "expected_route_accuracy": 1.0,
+  "requirement_dataset": "requirements.yaml",
+  "expected_requirement_accuracy": 1.0
 }
 

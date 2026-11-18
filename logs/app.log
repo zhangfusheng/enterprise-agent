@@ -12862,3 +12862,662 @@ sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
 2026-11-12 23:56:54,031 INFO uvicorn.access 127.0.0.1:32868 - "GET /api/v1/runs/run_d2ddcdd6f5f047018992 HTTP/1.1" 200
 2026-11-12 23:56:54,034 INFO uvicorn.access 127.0.0.1:32876 - "GET /api/v1/sessions/session_c8a87782b7114d218935 HTTP/1.1" 200
 2026-11-12 23:56:54,053 INFO uvicorn.access 127.0.0.1:32874 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:37:51,973 INFO uvicorn.error Application startup complete.
+2026-11-13 21:37:51,973 INFO uvicorn.error Application startup complete.
+2026-11-13 21:38:14,546 INFO uvicorn.access 127.0.0.1:51554 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:38:14,627 INFO uvicorn.access 127.0.0.1:51570 - "GET /api/v1/traces?limit=30 HTTP/1.1" 200
+2026-11-13 21:38:17,235 INFO uvicorn.access 127.0.0.1:41478 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-13 21:38:24,593 INFO uvicorn.access 127.0.0.1:41490 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:38:25,261 INFO uvicorn.access 127.0.0.1:41506 - "POST /api/v1/runs HTTP/1.1" 202
+2026-11-13 21:38:25,290 INFO uvicorn.access 127.0.0.1:41512 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:38:25,364 INFO uvicorn.access 127.0.0.1:41532 - "GET /api/v1/runs/run_ce9f60c561eb45bc88fb HTTP/1.1" 200
+2026-11-13 21:38:25,365 INFO uvicorn.access 127.0.0.1:41540 - "GET /api/v1/runs/run_ce9f60c561eb45bc88fb/events?after=0 HTTP/1.1" 200
+2026-11-13 21:38:26,867 INFO uvicorn.access 127.0.0.1:56940 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:27,882 INFO uvicorn.access 127.0.0.1:56946 - "GET /api/v1/runs/run_ce9f60c561eb45bc88fb HTTP/1.1" 200
+2026-11-13 21:38:28,354 INFO enterprise_agent.orchestration node=parse_route model_version=qwen3.8-max prompt_version=goal-parser-v4 run_id=run_ce9f60c561eb45bc88fb route=direct rationale=目标没有工具、实时信息、交付物或外部操作要求，可直接回答。 external_network_allowed=True network_mode=external parser=llm goal_ids=g1 input_chars=3
+2026-11-13 21:38:29,895 INFO uvicorn.access 127.0.0.1:56962 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:29,939 INFO enterprise_agent.orchestration node=accept model_version=none prompt_version=none run_id=run_ce9f60c561eb45bc88fb status=SUCCEEDED
+2026-11-13 21:38:29,955 INFO enterprise_agent.orchestration node=metrics model_version=none prompt_version=none run_id=run_ce9f60c561eb45bc88fb model_calls=2 structured_output_failures=0 fallbacks=0 retries=0 input_tokens=486 output_tokens=53 latency_ms=4009 cost_usd=none
+2026-11-13 21:38:30,396 INFO uvicorn.access 127.0.0.1:56966 - "GET /api/v1/runs/run_ce9f60c561eb45bc88fb HTTP/1.1" 200
+2026-11-13 21:38:30,504 INFO uvicorn.access 127.0.0.1:56968 - "GET /api/v1/runs/run_ce9f60c561eb45bc88fb HTTP/1.1" 200
+2026-11-13 21:38:32,918 INFO uvicorn.access 127.0.0.1:56980 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:35,318 INFO uvicorn.access 127.0.0.1:56982 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:38:35,936 INFO uvicorn.access 127.0.0.1:35162 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:38,955 INFO uvicorn.access 127.0.0.1:35166 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:41,970 INFO uvicorn.access 127.0.0.1:35178 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:44,994 INFO uvicorn.access 127.0.0.1:35192 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:45,347 INFO uvicorn.access 127.0.0.1:35194 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:38:48,013 INFO uvicorn.access 127.0.0.1:49298 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:50,251 INFO uvicorn.access 127.0.0.1:49302 - "POST /api/v1/runs HTTP/1.1" 202
+2026-11-13 21:38:50,273 INFO uvicorn.access 127.0.0.1:49308 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:38:50,311 INFO uvicorn.access 127.0.0.1:49318 - "GET /api/v1/runs/run_f10174b9c63746f6b460/events?after=0 HTTP/1.1" 200
+2026-11-13 21:38:50,319 INFO uvicorn.access 127.0.0.1:49316 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-13 21:38:50,347 INFO uvicorn.access 127.0.0.1:49328 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:50,370 INFO uvicorn.access 127.0.0.1:49334 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:52,845 INFO uvicorn.access 127.0.0.1:49348 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-13 21:38:53,242 INFO enterprise_agent.orchestration node=parse_route model_version=qwen3.8-max prompt_version=goal-parser-v4 run_id=run_f10174b9c63746f6b460 route=direct rationale=目标没有工具、实时信息、交付物或外部操作要求，可直接回答。 external_network_allowed=True network_mode=external parser=llm goal_ids=goal_1 input_chars=49
+2026-11-13 21:38:53,393 INFO uvicorn.access 127.0.0.1:49354 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:54,960 INFO enterprise_agent.orchestration node=accept model_version=none prompt_version=none run_id=run_f10174b9c63746f6b460 status=SUCCEEDED
+2026-11-13 21:38:54,991 INFO enterprise_agent.orchestration node=metrics model_version=none prompt_version=none run_id=run_f10174b9c63746f6b460 model_calls=2 structured_output_failures=0 fallbacks=0 retries=0 input_tokens=562 output_tokens=96 latency_ms=3804 cost_usd=none
+2026-11-13 21:38:55,366 INFO uvicorn.access 127.0.0.1:60648 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-13 21:38:55,454 INFO uvicorn.access 127.0.0.1:60658 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-13 21:38:56,417 INFO uvicorn.access 127.0.0.1:60660 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:38:59,432 INFO uvicorn.access 127.0.0.1:60664 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:00,290 INFO uvicorn.access 127.0.0.1:60678 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:39:02,456 INFO uvicorn.access 127.0.0.1:60684 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:05,473 INFO uvicorn.access 127.0.0.1:53328 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:08,496 INFO uvicorn.access 127.0.0.1:53334 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:10,316 INFO uvicorn.access 127.0.0.1:53348 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:39:11,520 INFO uvicorn.access 127.0.0.1:53356 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:14,543 INFO uvicorn.access 127.0.0.1:53366 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:17,568 INFO uvicorn.access 127.0.0.1:52934 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:20,345 INFO uvicorn.access 127.0.0.1:52936 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:39:20,582 INFO uvicorn.access 127.0.0.1:52944 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:23,594 INFO uvicorn.access 127.0.0.1:52958 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:26,609 INFO uvicorn.access 127.0.0.1:41816 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:29,621 INFO uvicorn.access 127.0.0.1:41824 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 21:39:30,371 INFO uvicorn.access 127.0.0.1:41834 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:39:31,512 INFO uvicorn.access 127.0.0.1:41842 - "GET /api/v1/traces?limit=30 HTTP/1.1" 200
+2026-11-13 21:39:33,164 INFO uvicorn.access 127.0.0.1:41862 - "GET /api/v1/runs/run_f10174b9c63746f6b460/trace HTTP/1.1" 200
+2026-11-13 21:39:40,398 INFO uvicorn.access 127.0.0.1:35084 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:39:50,453 INFO uvicorn.access 127.0.0.1:35306 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 21:42:32,182 INFO uvicorn.error Shutting down
+2026-11-13 21:42:32,182 INFO uvicorn.error Shutting down
+2026-11-13 21:42:32,298 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:42:32,298 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:42:32,312 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:42:32,312 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:42:32,314 INFO uvicorn.error Finished server process [80557]
+2026-11-13 21:42:32,314 INFO uvicorn.error Finished server process [80557]
+2026-11-13 21:42:44,941 INFO uvicorn.error Application startup complete.
+2026-11-13 21:42:44,941 INFO uvicorn.error Application startup complete.
+2026-11-13 21:42:44,942 INFO uvicorn.error Shutting down
+2026-11-13 21:42:44,942 INFO uvicorn.error Shutting down
+2026-11-13 21:42:45,044 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:42:45,044 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:42:45,046 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:42:45,046 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:42:45,046 INFO uvicorn.error Finished server process [81666]
+2026-11-13 21:42:45,046 INFO uvicorn.error Finished server process [81666]
+2026-11-13 21:42:53,119 INFO uvicorn.error Application startup complete.
+2026-11-13 21:42:53,119 INFO uvicorn.error Application startup complete.
+2026-11-13 21:42:53,120 INFO uvicorn.error Shutting down
+2026-11-13 21:42:53,120 INFO uvicorn.error Shutting down
+2026-11-13 21:42:53,221 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:42:53,221 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:42:53,222 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:42:53,222 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:42:53,222 INFO uvicorn.error Finished server process [81788]
+2026-11-13 21:42:53,222 INFO uvicorn.error Finished server process [81788]
+2026-11-13 21:43:03,805 INFO uvicorn.error Application startup complete.
+2026-11-13 21:43:03,805 INFO uvicorn.error Application startup complete.
+2026-11-13 21:44:35,237 INFO uvicorn.error Shutting down
+2026-11-13 21:44:35,237 INFO uvicorn.error Shutting down
+2026-11-13 21:44:35,344 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:44:35,344 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:44:35,349 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:44:35,349 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:44:35,351 INFO uvicorn.error Finished server process [81834]
+2026-11-13 21:44:35,351 INFO uvicorn.error Finished server process [81834]
+2026-11-13 21:44:45,515 INFO uvicorn.error Application startup complete.
+2026-11-13 21:44:45,515 INFO uvicorn.error Application startup complete.
+2026-11-13 21:45:53,577 INFO uvicorn.error Shutting down
+2026-11-13 21:45:53,577 INFO uvicorn.error Shutting down
+2026-11-13 21:45:53,684 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:45:53,684 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:45:53,685 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:45:53,685 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:45:53,686 INFO uvicorn.error Finished server process [82068]
+2026-11-13 21:45:53,686 INFO uvicorn.error Finished server process [82068]
+2026-11-13 21:46:00,768 INFO uvicorn.error Application startup complete.
+2026-11-13 21:46:00,768 INFO uvicorn.error Application startup complete.
+2026-11-13 21:49:01,095 INFO uvicorn.error Shutting down
+2026-11-13 21:49:01,095 INFO uvicorn.error Shutting down
+2026-11-13 21:49:01,199 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:49:01,199 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:49:01,200 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:49:01,200 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:49:01,200 INFO uvicorn.error Finished server process [82257]
+2026-11-13 21:49:01,200 INFO uvicorn.error Finished server process [82257]
+2026-11-13 21:49:09,871 INFO uvicorn.error Application startup complete.
+2026-11-13 21:49:09,871 INFO uvicorn.error Application startup complete.
+2026-11-13 21:56:45,109 INFO uvicorn.error Shutting down
+2026-11-13 21:56:45,109 INFO uvicorn.error Shutting down
+2026-11-13 21:56:45,212 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:56:45,212 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:56:45,214 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:56:45,214 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:56:45,215 INFO uvicorn.error Finished server process [82563]
+2026-11-13 21:56:45,215 INFO uvicorn.error Finished server process [82563]
+2026-11-13 21:56:54,913 INFO uvicorn.error Application startup complete.
+2026-11-13 21:56:54,913 INFO uvicorn.error Application startup complete.
+2026-11-13 21:57:03,591 INFO uvicorn.error Shutting down
+2026-11-13 21:57:03,591 INFO uvicorn.error Shutting down
+2026-11-13 21:57:03,693 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:57:03,693 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:57:03,694 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:57:03,694 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:57:03,699 INFO uvicorn.error Finished server process [83585]
+2026-11-13 21:57:03,699 INFO uvicorn.error Finished server process [83585]
+2026-11-13 21:57:12,715 INFO uvicorn.error Application startup complete.
+2026-11-13 21:57:12,715 INFO uvicorn.error Application startup complete.
+2026-11-13 21:57:17,553 INFO uvicorn.error Shutting down
+2026-11-13 21:57:17,553 INFO uvicorn.error Shutting down
+2026-11-13 21:57:17,664 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:57:17,664 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 21:57:17,665 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:57:17,665 INFO uvicorn.error Application shutdown complete.
+2026-11-13 21:57:17,665 INFO uvicorn.error Finished server process [83740]
+2026-11-13 21:57:17,665 INFO uvicorn.error Finished server process [83740]
+2026-11-13 21:57:27,593 INFO uvicorn.error Application startup complete.
+2026-11-13 21:57:27,593 INFO uvicorn.error Application startup complete.
+2026-11-13 22:22:25,565 INFO uvicorn.error Shutting down
+2026-11-13 22:22:25,565 INFO uvicorn.error Shutting down
+2026-11-13 22:22:25,695 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:22:25,695 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:22:25,702 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:22:25,702 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:22:25,705 INFO uvicorn.error Finished server process [83856]
+2026-11-13 22:22:25,705 INFO uvicorn.error Finished server process [83856]
+2026-11-13 22:22:39,641 INFO uvicorn.error Application startup complete.
+2026-11-13 22:22:39,641 INFO uvicorn.error Application startup complete.
+2026-11-13 22:22:39,643 INFO uvicorn.error Shutting down
+2026-11-13 22:22:39,643 INFO uvicorn.error Shutting down
+2026-11-13 22:22:39,745 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:22:39,745 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:22:39,749 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:22:39,749 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:22:39,750 INFO uvicorn.error Finished server process [86949]
+2026-11-13 22:22:39,750 INFO uvicorn.error Finished server process [86949]
+2026-11-13 22:22:50,722 INFO uvicorn.error Application startup complete.
+2026-11-13 22:22:50,722 INFO uvicorn.error Application startup complete.
+2026-11-13 22:23:23,030 INFO uvicorn.error Shutting down
+2026-11-13 22:23:23,030 INFO uvicorn.error Shutting down
+2026-11-13 22:23:23,133 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:23:23,133 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:23:23,134 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:23:23,134 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:23:23,135 INFO uvicorn.error Finished server process [87135]
+2026-11-13 22:23:23,135 INFO uvicorn.error Finished server process [87135]
+2026-11-13 22:23:34,260 INFO uvicorn.error Application startup complete.
+2026-11-13 22:23:34,260 INFO uvicorn.error Application startup complete.
+2026-11-13 22:23:34,261 INFO uvicorn.error Shutting down
+2026-11-13 22:23:34,261 INFO uvicorn.error Shutting down
+2026-11-13 22:23:34,364 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:23:34,364 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:23:34,365 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:23:34,365 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:23:34,365 INFO uvicorn.error Finished server process [87324]
+2026-11-13 22:23:34,365 INFO uvicorn.error Finished server process [87324]
+2026-11-13 22:23:40,868 INFO uvicorn.error Application startup complete.
+2026-11-13 22:23:40,868 INFO uvicorn.error Application startup complete.
+2026-11-13 22:24:26,766 INFO uvicorn.error Shutting down
+2026-11-13 22:24:26,766 INFO uvicorn.error Shutting down
+2026-11-13 22:24:26,919 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:24:26,919 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 22:24:26,971 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:24:26,971 INFO uvicorn.error Application shutdown complete.
+2026-11-13 22:24:26,974 INFO uvicorn.error Finished server process [87452]
+2026-11-13 22:24:26,974 INFO uvicorn.error Finished server process [87452]
+2026-11-13 22:24:39,068 INFO uvicorn.error Application startup complete.
+2026-11-13 22:24:39,068 INFO uvicorn.error Application startup complete.
+2026-11-13 22:54:00,023 INFO uvicorn.access 127.0.0.1:49092 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 22:54:00,025 INFO uvicorn.access 127.0.0.1:49106 - "GET /api/v1/runs/run_f10174b9c63746f6b460/trace HTTP/1.1" 200
+2026-11-13 22:54:10,073 INFO uvicorn.access 127.0.0.1:36630 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 22:54:13,870 INFO uvicorn.access 127.0.0.1:36636 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-13 22:54:13,871 INFO uvicorn.access 127.0.0.1:36646 - "GET /api/v1/runs/run_f10174b9c63746f6b460/events?after=0 HTTP/1.1" 200
+2026-11-13 22:54:14,155 INFO uvicorn.access 127.0.0.1:36662 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-13 22:54:15,439 INFO uvicorn.access 127.0.0.1:44844 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 22:54:15,513 INFO uvicorn.access 127.0.0.1:44842 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-13 22:54:18,457 INFO uvicorn.access 127.0.0.1:44848 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 22:54:20,106 INFO uvicorn.access 127.0.0.1:44864 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 22:54:21,478 INFO uvicorn.access 127.0.0.1:44878 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 22:54:24,493 INFO uvicorn.access 127.0.0.1:44884 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 22:54:27,513 INFO uvicorn.access 127.0.0.1:35788 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 22:54:30,137 INFO uvicorn.access 127.0.0.1:35804 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 22:54:30,539 INFO uvicorn.access 127.0.0.1:35810 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 22:54:33,564 INFO uvicorn.access 127.0.0.1:35826 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 22:54:36,588 INFO uvicorn.access 127.0.0.1:60934 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 23:13:00,863 INFO uvicorn.access 127.0.0.1:38990 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-13 23:13:00,890 INFO uvicorn.access 127.0.0.1:38962 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-13 23:13:00,954 INFO uvicorn.access 127.0.0.1:38958 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-13 23:13:01,012 INFO uvicorn.access 127.0.0.1:38976 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-13 23:29:39,891 INFO uvicorn.error Shutting down
+2026-11-13 23:29:39,891 INFO uvicorn.error Shutting down
+2026-11-13 23:29:39,995 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 23:29:39,995 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 23:29:40,008 INFO uvicorn.error Application shutdown complete.
+2026-11-13 23:29:40,008 INFO uvicorn.error Application shutdown complete.
+2026-11-13 23:29:40,009 INFO uvicorn.error Finished server process [87705]
+2026-11-13 23:29:40,009 INFO uvicorn.error Finished server process [87705]
+2026-11-13 23:30:00,154 INFO uvicorn.error Application startup complete.
+2026-11-13 23:30:00,154 INFO uvicorn.error Application startup complete.
+2026-11-13 23:32:01,940 INFO uvicorn.error Shutting down
+2026-11-13 23:32:01,940 INFO uvicorn.error Shutting down
+2026-11-13 23:32:02,048 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 23:32:02,048 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 23:32:02,054 INFO uvicorn.error Application shutdown complete.
+2026-11-13 23:32:02,054 INFO uvicorn.error Application shutdown complete.
+2026-11-13 23:32:02,054 INFO uvicorn.error Finished server process [93561]
+2026-11-13 23:32:02,054 INFO uvicorn.error Finished server process [93561]
+2026-11-13 23:32:19,200 INFO uvicorn.error Application startup complete.
+2026-11-13 23:32:19,200 INFO uvicorn.error Application startup complete.
+2026-11-13 23:32:31,211 INFO uvicorn.error Shutting down
+2026-11-13 23:32:31,211 INFO uvicorn.error Shutting down
+2026-11-13 23:32:31,316 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 23:32:31,316 INFO uvicorn.error Waiting for application shutdown.
+2026-11-13 23:32:31,322 INFO uvicorn.error Application shutdown complete.
+2026-11-13 23:32:31,322 INFO uvicorn.error Application shutdown complete.
+2026-11-13 23:32:31,323 INFO uvicorn.error Finished server process [94236]
+2026-11-13 23:32:31,323 INFO uvicorn.error Finished server process [94236]
+2026-11-13 23:32:46,785 INFO uvicorn.error Application startup complete.
+2026-11-13 23:32:46,785 INFO uvicorn.error Application startup complete.
+2026-11-14 00:37:36,259 INFO uvicorn.access 127.0.0.1:50976 - "GET /api/v1/sessions/session_846a2bcb4d6444d0a541 HTTP/1.1" 200
+2026-11-14 00:37:36,272 INFO uvicorn.access 127.0.0.1:50962 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 00:37:36,295 INFO uvicorn.access 127.0.0.1:50956 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-14 00:37:36,387 INFO uvicorn.access 127.0.0.1:50974 - "GET /api/v1/models HTTP/1.1" 200
+2026-11-14 09:07:58,750 INFO uvicorn.access 127.0.0.1:51792 - "GET /api/v1/runs/run_f10174b9c63746f6b460/events?after=0 HTTP/1.1" 200
+2026-11-14 09:07:58,779 INFO uvicorn.access 127.0.0.1:51788 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 09:07:58,796 INFO uvicorn.access 127.0.0.1:51778 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-14 09:07:59,348 INFO uvicorn.access 127.0.0.1:56718 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 10:40:05,581 INFO uvicorn.access 127.0.0.1:46060 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-14 10:40:05,590 INFO uvicorn.access 127.0.0.1:46070 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 10:40:05,992 INFO uvicorn.access 127.0.0.1:46108 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 10:40:06,011 INFO uvicorn.access 127.0.0.1:46124 - "GET /api/v1/runs/run_f10174b9c63746f6b460/events?after=0 HTTP/1.1" 200
+2026-11-14 10:40:06,057 INFO uvicorn.access 127.0.0.1:46102 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-14 10:40:06,330 INFO uvicorn.access 127.0.0.1:46140 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 10:40:16,097 INFO uvicorn.access 127.0.0.1:48094 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-14 12:59:11,598 INFO uvicorn.access 127.0.0.1:57806 - "GET /api/v1/runs/run_f10174b9c63746f6b460/events?after=0 HTTP/1.1" 200
+2026-11-14 12:59:11,623 INFO uvicorn.access 127.0.0.1:57792 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 12:59:11,713 INFO uvicorn.access 127.0.0.1:57776 - "GET /api/v1/sessions?limit=100 HTTP/1.1" 200
+2026-11-14 12:59:12,211 INFO uvicorn.access 127.0.0.1:57812 - "GET /api/v1/runs/run_f10174b9c63746f6b460 HTTP/1.1" 200
+2026-11-14 22:36:30,841 INFO uvicorn.error Shutting down
+2026-11-14 22:36:30,841 INFO uvicorn.error Shutting down
+2026-11-14 22:36:31,006 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:36:31,006 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:36:31,207 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:36:31,207 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:36:31,208 INFO uvicorn.error Finished server process [94451]
+2026-11-14 22:36:31,208 INFO uvicorn.error Finished server process [94451]
+2026-11-14 22:36:46,767 INFO uvicorn.error Application startup complete.
+2026-11-14 22:36:46,767 INFO uvicorn.error Application startup complete.
+2026-11-14 22:37:08,556 INFO uvicorn.error Shutting down
+2026-11-14 22:37:08,556 INFO uvicorn.error Shutting down
+2026-11-14 22:37:08,663 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:37:08,663 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:37:08,664 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:37:08,664 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:37:08,665 INFO uvicorn.error Finished server process [158606]
+2026-11-14 22:37:08,665 INFO uvicorn.error Finished server process [158606]
+2026-11-14 22:37:25,599 INFO uvicorn.error Application startup complete.
+2026-11-14 22:37:25,599 INFO uvicorn.error Application startup complete.
+2026-11-14 22:37:44,767 INFO uvicorn.error Shutting down
+2026-11-14 22:37:44,767 INFO uvicorn.error Shutting down
+2026-11-14 22:37:44,869 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:37:44,869 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:37:44,869 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:37:44,869 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:37:44,870 INFO uvicorn.error Finished server process [158819]
+2026-11-14 22:37:44,870 INFO uvicorn.error Finished server process [158819]
+2026-11-14 22:37:55,896 INFO uvicorn.error Application startup complete.
+2026-11-14 22:37:55,896 INFO uvicorn.error Application startup complete.
+2026-11-14 22:54:09,896 INFO uvicorn.error Shutting down
+2026-11-14 22:54:09,896 INFO uvicorn.error Shutting down
+2026-11-14 22:54:10,020 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:54:10,020 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:54:10,041 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:54:10,041 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:54:10,043 INFO uvicorn.error Finished server process [159131]
+2026-11-14 22:54:10,043 INFO uvicorn.error Finished server process [159131]
+2026-11-14 22:54:23,579 INFO uvicorn.error Application startup complete.
+2026-11-14 22:54:23,579 INFO uvicorn.error Application startup complete.
+2026-11-14 22:54:51,283 INFO uvicorn.error Shutting down
+2026-11-14 22:54:51,283 INFO uvicorn.error Shutting down
+2026-11-14 22:54:51,395 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:54:51,395 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 22:54:51,399 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:54:51,399 INFO uvicorn.error Application shutdown complete.
+2026-11-14 22:54:51,399 INFO uvicorn.error Finished server process [161762]
+2026-11-14 22:54:51,399 INFO uvicorn.error Finished server process [161762]
+2026-11-14 22:55:07,869 INFO uvicorn.error Application startup complete.
+2026-11-14 22:55:07,869 INFO uvicorn.error Application startup complete.
+2026-11-14 23:05:23,737 INFO uvicorn.error Shutting down
+2026-11-14 23:05:23,737 INFO uvicorn.error Shutting down
+2026-11-14 23:05:23,881 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:05:23,881 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:05:23,923 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:05:23,923 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:05:23,923 INFO uvicorn.error Finished server process [161991]
+2026-11-14 23:05:23,923 INFO uvicorn.error Finished server process [161991]
+2026-11-14 23:05:37,961 INFO uvicorn.error Application startup complete.
+2026-11-14 23:05:37,961 INFO uvicorn.error Application startup complete.
+2026-11-14 23:05:37,962 INFO uvicorn.error Shutting down
+2026-11-14 23:05:37,962 INFO uvicorn.error Shutting down
+2026-11-14 23:05:38,063 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:05:38,063 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:05:38,064 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:05:38,064 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:05:38,065 INFO uvicorn.error Finished server process [163809]
+2026-11-14 23:05:38,065 INFO uvicorn.error Finished server process [163809]
+2026-11-14 23:05:54,586 INFO uvicorn.error Application startup complete.
+2026-11-14 23:05:54,586 INFO uvicorn.error Application startup complete.
+2026-11-14 23:14:58,441 INFO uvicorn.error Shutting down
+2026-11-14 23:14:58,441 INFO uvicorn.error Shutting down
+2026-11-14 23:14:58,545 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:14:58,545 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:14:58,547 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:14:58,547 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:14:58,549 INFO uvicorn.error Finished server process [163992]
+2026-11-14 23:14:58,549 INFO uvicorn.error Finished server process [163992]
+2026-11-14 23:15:11,317 INFO uvicorn.error Application startup complete.
+2026-11-14 23:15:11,317 INFO uvicorn.error Application startup complete.
+2026-11-14 23:20:25,999 INFO uvicorn.error Shutting down
+2026-11-14 23:20:25,999 INFO uvicorn.error Shutting down
+2026-11-14 23:20:26,205 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:20:26,205 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:20:26,392 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:20:26,392 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:20:26,394 INFO uvicorn.error Finished server process [165386]
+2026-11-14 23:20:26,394 INFO uvicorn.error Finished server process [165386]
+2026-11-14 23:20:41,239 INFO uvicorn.error Application startup complete.
+2026-11-14 23:20:41,239 INFO uvicorn.error Application startup complete.
+2026-11-14 23:20:41,240 INFO uvicorn.error Shutting down
+2026-11-14 23:20:41,240 INFO uvicorn.error Shutting down
+2026-11-14 23:20:41,342 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:20:41,342 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:20:41,343 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:20:41,343 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:20:41,345 INFO uvicorn.error Finished server process [166670]
+2026-11-14 23:20:41,345 INFO uvicorn.error Finished server process [166670]
+2026-11-14 23:20:54,935 INFO uvicorn.error Application startup complete.
+2026-11-14 23:20:54,935 INFO uvicorn.error Application startup complete.
+2026-11-14 23:21:33,267 INFO uvicorn.error Shutting down
+2026-11-14 23:21:33,267 INFO uvicorn.error Shutting down
+2026-11-14 23:21:33,369 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:21:33,369 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:21:33,371 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:21:33,371 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:21:33,372 INFO uvicorn.error Finished server process [166881]
+2026-11-14 23:21:33,372 INFO uvicorn.error Finished server process [166881]
+2026-11-14 23:21:55,463 INFO uvicorn.error Application startup complete.
+2026-11-14 23:21:55,463 INFO uvicorn.error Application startup complete.
+2026-11-14 23:22:52,591 INFO uvicorn.error Shutting down
+2026-11-14 23:22:52,591 INFO uvicorn.error Shutting down
+2026-11-14 23:22:52,693 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:22:52,693 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:22:52,694 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:22:52,694 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:22:52,696 INFO uvicorn.error Finished server process [167172]
+2026-11-14 23:22:52,696 INFO uvicorn.error Finished server process [167172]
+2026-11-14 23:23:13,315 INFO uvicorn.error Application startup complete.
+2026-11-14 23:23:13,315 INFO uvicorn.error Application startup complete.
+2026-11-14 23:38:27,804 INFO uvicorn.error Shutting down
+2026-11-14 23:38:27,804 INFO uvicorn.error Shutting down
+2026-11-14 23:38:27,907 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:38:27,907 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:38:27,910 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:38:27,910 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:38:27,913 INFO uvicorn.error Finished server process [167721]
+2026-11-14 23:38:27,913 INFO uvicorn.error Finished server process [167721]
+2026-11-14 23:38:41,189 INFO uvicorn.error Application startup complete.
+2026-11-14 23:38:41,189 INFO uvicorn.error Application startup complete.
+2026-11-14 23:38:44,220 INFO uvicorn.error Shutting down
+2026-11-14 23:38:44,220 INFO uvicorn.error Shutting down
+2026-11-14 23:38:44,321 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:38:44,321 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:38:44,323 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:38:44,323 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:38:44,324 INFO uvicorn.error Finished server process [170443]
+2026-11-14 23:38:44,324 INFO uvicorn.error Finished server process [170443]
+2026-11-14 23:38:50,720 INFO uvicorn.error Application startup complete.
+2026-11-14 23:38:50,720 INFO uvicorn.error Application startup complete.
+2026-11-14 23:39:11,897 INFO uvicorn.error Shutting down
+2026-11-14 23:39:11,897 INFO uvicorn.error Shutting down
+2026-11-14 23:39:12,000 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:39:12,000 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:39:12,001 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:39:12,001 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:39:12,002 INFO uvicorn.error Finished server process [170605]
+2026-11-14 23:39:12,002 INFO uvicorn.error Finished server process [170605]
+2026-11-14 23:39:26,557 INFO uvicorn.error Application startup complete.
+2026-11-14 23:39:26,557 INFO uvicorn.error Application startup complete.
+2026-11-14 23:39:37,554 INFO uvicorn.error Shutting down
+2026-11-14 23:39:37,554 INFO uvicorn.error Shutting down
+2026-11-14 23:39:37,656 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:39:37,656 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:39:37,657 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:39:37,657 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:39:37,658 INFO uvicorn.error Finished server process [170829]
+2026-11-14 23:39:37,658 INFO uvicorn.error Finished server process [170829]
+2026-11-14 23:39:53,520 INFO uvicorn.error Application startup complete.
+2026-11-14 23:39:53,520 INFO uvicorn.error Application startup complete.
+2026-11-14 23:39:56,558 INFO uvicorn.error Shutting down
+2026-11-14 23:39:56,558 INFO uvicorn.error Shutting down
+2026-11-14 23:39:56,659 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:39:56,659 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:39:56,661 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:39:56,661 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:39:56,661 INFO uvicorn.error Finished server process [171073]
+2026-11-14 23:39:56,661 INFO uvicorn.error Finished server process [171073]
+2026-11-14 23:40:19,968 INFO uvicorn.error Application startup complete.
+2026-11-14 23:40:19,968 INFO uvicorn.error Application startup complete.
+2026-11-14 23:56:22,454 INFO uvicorn.error Shutting down
+2026-11-14 23:56:22,454 INFO uvicorn.error Shutting down
+2026-11-14 23:56:22,556 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:56:22,556 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:56:22,557 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:56:22,557 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:56:22,558 INFO uvicorn.error Finished server process [171313]
+2026-11-14 23:56:22,558 INFO uvicorn.error Finished server process [171313]
+2026-11-14 23:56:33,638 INFO uvicorn.error Application startup complete.
+2026-11-14 23:56:33,638 INFO uvicorn.error Application startup complete.
+2026-11-14 23:56:33,640 INFO uvicorn.error Shutting down
+2026-11-14 23:56:33,640 INFO uvicorn.error Shutting down
+2026-11-14 23:56:33,746 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:56:33,746 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:56:33,749 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:56:33,749 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:56:33,751 INFO uvicorn.error Finished server process [173632]
+2026-11-14 23:56:33,751 INFO uvicorn.error Finished server process [173632]
+2026-11-14 23:56:51,299 INFO uvicorn.error Application startup complete.
+2026-11-14 23:56:51,299 INFO uvicorn.error Application startup complete.
+2026-11-14 23:56:51,300 INFO uvicorn.error Shutting down
+2026-11-14 23:56:51,300 INFO uvicorn.error Shutting down
+2026-11-14 23:56:51,402 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:56:51,402 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:56:51,404 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:56:51,404 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:56:51,406 INFO uvicorn.error Finished server process [173786]
+2026-11-14 23:56:51,406 INFO uvicorn.error Finished server process [173786]
+2026-11-14 23:57:10,302 INFO uvicorn.error Application startup complete.
+2026-11-14 23:57:10,302 INFO uvicorn.error Application startup complete.
+2026-11-14 23:57:32,570 INFO uvicorn.error Shutting down
+2026-11-14 23:57:32,570 INFO uvicorn.error Shutting down
+2026-11-14 23:57:32,672 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:57:32,672 INFO uvicorn.error Waiting for application shutdown.
+2026-11-14 23:57:32,673 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:57:32,673 INFO uvicorn.error Application shutdown complete.
+2026-11-14 23:57:32,674 INFO uvicorn.error Finished server process [173956]
+2026-11-14 23:57:32,674 INFO uvicorn.error Finished server process [173956]
+2026-11-14 23:57:54,415 INFO uvicorn.error Application startup complete.
+2026-11-14 23:57:54,415 INFO uvicorn.error Application startup complete.
+2026-11-15 00:03:07,937 INFO uvicorn.error Shutting down
+2026-11-15 00:03:07,937 INFO uvicorn.error Shutting down
+2026-11-15 00:03:08,040 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:03:08,040 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:03:08,045 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:03:08,045 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:03:08,046 INFO uvicorn.error Finished server process [174220]
+2026-11-15 00:03:08,046 INFO uvicorn.error Finished server process [174220]
+2026-11-15 00:03:28,157 INFO uvicorn.error Application startup complete.
+2026-11-15 00:03:28,157 INFO uvicorn.error Application startup complete.
+2026-11-15 00:03:29,285 INFO uvicorn.error Shutting down
+2026-11-15 00:03:29,285 INFO uvicorn.error Shutting down
+2026-11-15 00:03:29,390 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:03:29,390 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:03:29,391 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:03:29,391 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:03:29,392 INFO uvicorn.error Finished server process [175503]
+2026-11-15 00:03:29,392 INFO uvicorn.error Finished server process [175503]
+2026-11-15 00:03:58,933 INFO uvicorn.error Application startup complete.
+2026-11-15 00:03:58,933 INFO uvicorn.error Application startup complete.
+2026-11-15 00:04:06,720 INFO uvicorn.error Shutting down
+2026-11-15 00:04:06,720 INFO uvicorn.error Shutting down
+2026-11-15 00:04:06,824 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:04:06,824 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:04:06,830 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:04:06,830 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:04:06,835 INFO uvicorn.error Finished server process [175769]
+2026-11-15 00:04:06,835 INFO uvicorn.error Finished server process [175769]
+2026-11-15 00:04:24,856 INFO uvicorn.error Application startup complete.
+2026-11-15 00:04:24,856 INFO uvicorn.error Application startup complete.
+2026-11-15 00:04:24,858 INFO uvicorn.error Shutting down
+2026-11-15 00:04:24,858 INFO uvicorn.error Shutting down
+2026-11-15 00:04:24,968 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:04:24,968 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:04:24,982 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:04:24,982 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:04:24,983 INFO uvicorn.error Finished server process [175953]
+2026-11-15 00:04:24,983 INFO uvicorn.error Finished server process [175953]
+2026-11-15 00:04:45,383 INFO uvicorn.error Application startup complete.
+2026-11-15 00:04:45,383 INFO uvicorn.error Application startup complete.
+2026-11-15 00:04:45,385 INFO uvicorn.error Shutting down
+2026-11-15 00:04:45,385 INFO uvicorn.error Shutting down
+2026-11-15 00:04:45,487 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:04:45,487 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:04:45,488 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:04:45,488 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:04:45,490 INFO uvicorn.error Finished server process [176139]
+2026-11-15 00:04:45,490 INFO uvicorn.error Finished server process [176139]
+2026-11-15 00:04:55,633 INFO uvicorn.error Application startup complete.
+2026-11-15 00:04:55,633 INFO uvicorn.error Application startup complete.
+2026-11-15 00:05:08,765 INFO uvicorn.error Shutting down
+2026-11-15 00:05:08,765 INFO uvicorn.error Shutting down
+2026-11-15 00:05:08,873 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:05:08,873 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:05:08,880 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:05:08,880 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:05:08,881 INFO uvicorn.error Finished server process [176344]
+2026-11-15 00:05:08,881 INFO uvicorn.error Finished server process [176344]
+2026-11-15 00:05:18,998 INFO uvicorn.error Application startup complete.
+2026-11-15 00:05:18,998 INFO uvicorn.error Application startup complete.
+2026-11-15 00:05:36,169 INFO uvicorn.error Shutting down
+2026-11-15 00:05:36,169 INFO uvicorn.error Shutting down
+2026-11-15 00:05:36,271 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:05:36,271 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:05:36,271 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:05:36,271 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:05:36,272 INFO uvicorn.error Finished server process [176510]
+2026-11-15 00:05:36,272 INFO uvicorn.error Finished server process [176510]
+2026-11-15 00:05:43,854 INFO uvicorn.error Application startup complete.
+2026-11-15 00:05:43,854 INFO uvicorn.error Application startup complete.
+2026-11-15 00:06:18,811 INFO uvicorn.error Shutting down
+2026-11-15 00:06:18,811 INFO uvicorn.error Shutting down
+2026-11-15 00:06:18,953 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:06:18,953 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:06:18,955 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:06:18,955 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:06:18,957 INFO uvicorn.error Finished server process [176692]
+2026-11-15 00:06:18,957 INFO uvicorn.error Finished server process [176692]
+2026-11-15 00:06:35,486 INFO uvicorn.error Application startup complete.
+2026-11-15 00:06:35,486 INFO uvicorn.error Application startup complete.
+2026-11-15 00:07:59,769 INFO uvicorn.error Shutting down
+2026-11-15 00:07:59,769 INFO uvicorn.error Shutting down
+2026-11-15 00:07:59,870 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:07:59,870 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:07:59,871 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:07:59,871 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:07:59,872 INFO uvicorn.error Finished server process [176982]
+2026-11-15 00:07:59,872 INFO uvicorn.error Finished server process [176982]
+2026-11-15 00:08:13,218 INFO uvicorn.error Application startup complete.
+2026-11-15 00:08:13,218 INFO uvicorn.error Application startup complete.
+2026-11-15 00:16:18,083 INFO uvicorn.error Shutting down
+2026-11-15 00:16:18,083 INFO uvicorn.error Shutting down
+2026-11-15 00:16:18,185 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:16:18,185 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:16:18,189 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:16:18,189 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:16:18,191 INFO uvicorn.error Finished server process [177598]
+2026-11-15 00:16:18,191 INFO uvicorn.error Finished server process [177598]
+2026-11-15 00:16:27,892 INFO uvicorn.error Application startup complete.
+2026-11-15 00:16:27,892 INFO uvicorn.error Application startup complete.
+2026-11-15 00:16:57,907 INFO uvicorn.error Shutting down
+2026-11-15 00:16:57,907 INFO uvicorn.error Shutting down
+2026-11-15 00:16:58,009 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:16:58,009 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:16:58,011 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:16:58,011 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:16:58,012 INFO uvicorn.error Finished server process [179027]
+2026-11-15 00:16:58,012 INFO uvicorn.error Finished server process [179027]
+2026-11-15 00:17:06,872 INFO uvicorn.error Application startup complete.
+2026-11-15 00:17:06,872 INFO uvicorn.error Application startup complete.
+2026-11-15 00:42:21,683 INFO uvicorn.error Shutting down
+2026-11-15 00:42:21,683 INFO uvicorn.error Shutting down
+2026-11-15 00:42:22,164 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:42:22,164 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:42:22,401 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:42:22,401 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:42:22,402 INFO uvicorn.error Finished server process [179169]
+2026-11-15 00:42:22,402 INFO uvicorn.error Finished server process [179169]
+2026-11-15 00:42:30,152 INFO uvicorn.error Application startup complete.
+2026-11-15 00:42:30,152 INFO uvicorn.error Application startup complete.
+2026-11-15 00:42:35,090 INFO uvicorn.error Shutting down
+2026-11-15 00:42:35,090 INFO uvicorn.error Shutting down
+2026-11-15 00:42:35,192 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:42:35,192 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:42:35,193 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:42:35,193 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:42:35,194 INFO uvicorn.error Finished server process [184866]
+2026-11-15 00:42:35,194 INFO uvicorn.error Finished server process [184866]
+2026-11-15 00:42:40,935 INFO uvicorn.error Application startup complete.
+2026-11-15 00:42:40,935 INFO uvicorn.error Application startup complete.
+2026-11-15 00:45:40,551 INFO uvicorn.error Shutting down
+2026-11-15 00:45:40,551 INFO uvicorn.error Shutting down
+2026-11-15 00:45:40,655 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:45:40,655 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:45:40,661 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:45:40,661 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:45:40,663 INFO uvicorn.error Finished server process [185057]
+2026-11-15 00:45:40,663 INFO uvicorn.error Finished server process [185057]
+2026-11-15 00:45:59,665 INFO uvicorn.error Application startup complete.
+2026-11-15 00:45:59,665 INFO uvicorn.error Application startup complete.
+2026-11-15 00:45:59,670 INFO uvicorn.error Shutting down
+2026-11-15 00:45:59,670 INFO uvicorn.error Shutting down
+2026-11-15 00:45:59,773 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:45:59,773 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:45:59,784 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:45:59,784 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:45:59,791 INFO uvicorn.error Finished server process [185611]
+2026-11-15 00:45:59,791 INFO uvicorn.error Finished server process [185611]
+2026-11-15 00:46:23,652 INFO uvicorn.error Application startup complete.
+2026-11-15 00:46:23,652 INFO uvicorn.error Application startup complete.
+2026-11-15 00:49:43,149 INFO uvicorn.error Shutting down
+2026-11-15 00:49:43,149 INFO uvicorn.error Shutting down
+2026-11-15 00:49:43,252 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:49:43,252 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:49:43,253 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:49:43,253 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:49:43,254 INFO uvicorn.error Finished server process [185913]
+2026-11-15 00:49:43,254 INFO uvicorn.error Finished server process [185913]
+2026-11-15 00:49:50,893 INFO uvicorn.error Application startup complete.
+2026-11-15 00:49:50,893 INFO uvicorn.error Application startup complete.
+2026-11-15 00:50:30,277 INFO uvicorn.error Shutting down
+2026-11-15 00:50:30,277 INFO uvicorn.error Shutting down
+2026-11-15 00:50:30,380 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:50:30,380 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:50:30,381 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:50:30,381 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:50:30,381 INFO uvicorn.error Finished server process [186662]
+2026-11-15 00:50:30,381 INFO uvicorn.error Finished server process [186662]
+2026-11-15 00:50:37,754 INFO uvicorn.error Application startup complete.
+2026-11-15 00:50:37,754 INFO uvicorn.error Application startup complete.
+2026-11-15 00:51:21,380 INFO uvicorn.error Shutting down
+2026-11-15 00:51:21,380 INFO uvicorn.error Shutting down
+2026-11-15 00:51:21,481 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:51:21,481 INFO uvicorn.error Waiting for application shutdown.
+2026-11-15 00:51:21,483 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:51:21,483 INFO uvicorn.error Application shutdown complete.
+2026-11-15 00:51:21,484 INFO uvicorn.error Finished server process [187017]
+2026-11-15 00:51:21,484 INFO uvicorn.error Finished server process [187017]
+2026-11-15 00:51:29,202 INFO uvicorn.error Application startup complete.
+2026-11-15 00:51:29,202 INFO uvicorn.error Application startup complete.

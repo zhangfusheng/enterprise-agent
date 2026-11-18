@@ -19,13 +19,13 @@ from enterprise_agent.application.execute_run import _request_planner
 from enterprise_agent.bootstrap.container import Container
 from enterprise_agent.bootstrap.settings import Settings
 from enterprise_agent.contracts.goals import Goal, GoalSpec
-from enterprise_agent.contracts.plans import GlobalPlan, TaskSpec, TaskStatus
+from enterprise_agent.contracts.plans import TaskSpec, TaskStatus
 from enterprise_agent.contracts.routing import RouteDecision, RouteKind
 from enterprise_agent.governance.budgets import BudgetLimits
 from enterprise_agent.orchestration.planning.llm_planner import (
     PROMPT_VERSION,
     LLMPlanner,
-    plan_trace,
+    PlanResult,
 )
 from enterprise_agent.orchestration.planning.planner import GlobalPlanner
 from enterprise_agent.orchestration.planning.validation import validate_plan
@@ -86,14 +86,15 @@ def _multi(*capabilities: str) -> RouteDecision:
     )
 
 
-def _create(planner: LLMPlanner, container: Container, spec: GoalSpec, route: RouteDecision, **kwargs: object) -> GlobalPlan:
+def _create(planner: LLMPlanner, container: Container, spec: GoalSpec, route: RouteDecision, **kwargs: object) -> PlanResult:
     limits = kwargs.pop("limits", container.budget_limits)
     assert isinstance(limits, BudgetLimits)
-    return planner.create("run-live", spec, route, limits=limits, **kwargs)  # type: ignore[arg-type]
+    return planner.create_result("run-live", spec, route, limits=limits, **kwargs)  # type: ignore[arg-type]
 
 
-def _accepted(plan: GlobalPlan, container: Container, spec: GoalSpec) -> None:
-    trace = plan_trace()
+def _accepted(result: PlanResult, container: Container, spec: GoalSpec) -> None:
+    plan = result.plan
+    trace = result.provenance
     assert trace.name == "llm"
     assert trace.prompt_version == PROMPT_VERSION
     assert trace.model_version == container.models.profile_for_role("planner").model_name
@@ -112,10 +113,11 @@ def test_single_known_capability_stays_on_the_template(live_planner: tuple[Conta
     container, planner = live_planner
     spec = _spec(_goal("goal_main", "请搜索网页并返回来源", "web_search"))
     route = _single("research", "web_search")
-    plan = _create(planner, container, spec, route)
+    result = _create(planner, container, spec, route)
+    plan = result.plan
     template = GlobalPlanner().create("run-live", spec, route)
    
-    assert plan_trace().name == "template"
+    assert result.provenance.name == "template"
     assert [task.task_id for task in plan.tasks] == [task.task_id for task in template.tasks]
     assert plan.tasks[0].agent_role == "research"
 
@@ -124,9 +126,10 @@ def test_multi_route_produces_a_validated_draft(live_planner: tuple[Container, L
     container, planner = live_planner
     spec = _spec(_goal("goal_main", "请搜索网页并分析这家公司的变化，生成报告", "web_search", "analysis"))
     route = _multi("web_search", "analysis")
-    plan = _create(planner, container, spec, route)
+    result = _create(planner, container, spec, route)
+    plan = result.plan
     pprint.pprint(plan)
-    _accepted(plan, container, spec)
+    _accepted(result, container, spec)
     research = [task.task_id for task in plan.tasks if task.agent_role == "research"]
     analysis = [task for task in plan.tasks if task.agent_role == "analysis"]
     by_id = {task.task_id: task for task in plan.tasks}
@@ -156,8 +159,9 @@ def test_multiple_goals_are_all_covered(live_planner: tuple[Container, LLMPlanne
         _goal("goal_search", "搜索这家公司本周的公开变化", "web_search"),
         _goal("goal_calc", "根据公开数字计算同比增长", "calculate"),
     )
-    plan = _create(planner, container, spec, _multi("web_search", "calculate"))
-    _accepted(plan, container, spec)
+    result = _create(planner, container, spec, _multi("web_search", "calculate"))
+    plan = result.plan
+    _accepted(result, container, spec)
     covered = {goal_id for task in plan.tasks for goal_id in task.goal_ids}
     assert covered == {"goal_search", "goal_calc"}
 
@@ -165,8 +169,9 @@ def test_multiple_goals_are_all_covered(live_planner: tuple[Container, LLMPlanne
 def test_composite_capabilities_use_the_model(live_planner: tuple[Container, LLMPlanner]) -> None:
     container, planner = live_planner
     spec = _spec(_goal("goal_main", "分析这份说明并计算合计", "analysis", "calculate"))
-    plan = _create(planner, container, spec, _single("analysis", "analysis", "calculate"))
-    _accepted(plan, container, spec)
+    result = _create(planner, container, spec, _single("analysis", "analysis", "calculate"))
+    plan = result.plan
+    _accepted(result, container, spec)
     assert {task.agent_role for task in plan.tasks} == {"analysis"}
 
 
@@ -180,8 +185,9 @@ def test_injected_goal_cannot_select_an_unknown_role(live_planner: tuple[Contain
             "calculate",
         )
     )
-    plan = _create(planner, container, spec, _single("analysis", "analysis", "calculate"))
-    trace = plan_trace()
+    result = _create(planner, container, spec, _single("analysis", "analysis", "calculate"))
+    plan = result.plan
+    trace = result.provenance
     assert trace.name in {"llm", "fallback"}
     validate_plan(plan, {"goal_main"}, container.policy, container.settings.max_tasks)
     assert {task.agent_role for task in plan.tasks} <= container.workers.roles()
@@ -193,10 +199,20 @@ def test_replan_keeps_the_completed_task(live_planner: tuple[Container, LLMPlann
     container, planner = live_planner
     spec = _spec(_goal("goal_main", "请搜索网页并分析，生成报告", "web_search", "analysis"))
     route = _multi("web_search", "analysis")
-    first = _create(planner, container, spec, route)
-    _accepted(first, container, spec)
+    first_result = _create(planner, container, spec, route)
+    first = first_result.plan
+    _accepted(first_result, container, spec)
     completed = next(task.task_id for task in first.tasks if task.agent_role == "research")
-    revised = _create(planner, container, spec, route, plan_version=2, completed={completed}, unmet=["缺少来源"])
-    _accepted(revised, container, spec)
+    revised_result = _create(
+        planner,
+        container,
+        spec,
+        route,
+        plan_version=2,
+        completed={completed},
+        unmet=["缺少来源"],
+    )
+    revised = revised_result.plan
+    _accepted(revised_result, container, spec)
     kept = next(task for task in revised.tasks if task.task_id == completed)
     assert kept.status == TaskStatus.SUCCEEDED

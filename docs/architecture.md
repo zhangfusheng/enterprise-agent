@@ -33,6 +33,8 @@ Direct 路径仍跳过全局计划、Worker 和工具循环，但由 Answer Agen
 
 Run 状态迁移由 `runtime/lifecycle.py` 校验。任务领取使用 `work_items` 的租约、Worker ID 和过期时间；提交终态前再次检查租约，因此失去执行权的旧 Worker 不能提交有效状态。取消先持久化，再由 Worker 在节点/工具边界检查并传播给子上下文。
 
+持久化业务状态使用顶层 `state_version`，进入执行器前统一迁移。Parser 和 Planner 分别把 provenance 与 GoalSpec/GlobalPlan 原子返回，Graph 将其保存为 `parse_provenance` 和 `plan_provenance`；恢复与版本归因不依赖线程局部的“最后一次调用”。详细决策见 [ADR 0003—0006](adr/README.md)。
+
 LangGraph 以 `run_id` 作为 `thread_id`。SQLite 开发环境使用 `SqliteSaver`，PostgreSQL 部署使用 `PostgresSaver`。checkpoint 不等于外部副作用 exactly-once：报告保存依赖稳定 operation ID，超时的副作用工具返回 UNKNOWN，不能盲目重试；数据库状态与 checkpoint 对账是应用层责任。
 
 Deep Agents 0.7.28 的 `create_deep_agent` 叠加在 LangChain `create_agent`/LangGraph 之上。本项目通过 `DeepAgentsHarness` 组装局部文件后端、显式 Todo middleware 和可配置 subagents；应用工具仍必须经过 ToolGateway。当前默认 general-purpose 子 Agent 是隔离、单次返回的上下文，不把 `max_depth` 误称为递归委派能力。真正的受控 Worker→Subagent 路径由 `DelegationService` 创建 child context，检查深度/总量/角色/工具收敛后调用 Analysis Agent；因此深度是服务端实际执行约束。

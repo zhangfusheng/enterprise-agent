@@ -39,6 +39,14 @@ def validate_goal_spec(spec: GoalSpec, policy: AuthorizationPolicy) -> GoalSpec:
     _unique_ids("goal", [item.id for item in goals])
     _unique_ids("deliverable", [item.id for item in deliverables])
     _unique_ids("acceptance criterion", [item.id for item in spec.acceptance_criteria])
+    _unique_ids("input requirement", [item.id for item in spec.input_requirements])
+    goal_ids = {item.id for item in goals}
+    for requirement in spec.input_requirements:
+        unknown_goals = set(requirement.goal_ids) - goal_ids
+        if unknown_goals:
+            raise ValueError(
+                f"input requirement references unknown goals: {sorted(unknown_goals)}"
+            )
     return spec.model_copy(update={"goals": goals, "deliverables": deliverables})
 
 

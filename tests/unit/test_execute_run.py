@@ -1,9 +1,14 @@
 import pytest
 
-from enterprise_agent.application.execute_run import _assistant_content, execute_run
+from enterprise_agent.application.execute_run import (
+    _assistant_content,
+    _resolved_versions,
+    execute_run,
+)
 from enterprise_agent.application.submit_run import submit_run
 from enterprise_agent.contracts.context import IdentityContext
 from enterprise_agent.contracts.runs import RunCreate, RunStatus
+from enterprise_agent.orchestration.routing.errors import GoalSpecInvariantError
 
 
 class _Graph:
@@ -63,6 +68,41 @@ def test_non_mapping_graph_result_marks_run_failed(container, monkeypatch):
     state = container.runs.get_run_unscoped(run_id).state_json
     assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.FAILED
     assert state["error"] == "TypeError"
+
+
+def test_legacy_state_without_parse_provenance_does_not_guess_from_context():
+    versions = _resolved_versions({}, None)
+
+    assert versions == {
+        "parser": "legacy",
+        "parser_model": None,
+        "parser_prompt": None,
+        "goal_compiler": "legacy",
+    }
+
+
+def test_goal_compiler_invariant_marks_run_failed_without_persisting_cause(
+    container, monkeypatch, caplog
+):
+    def invariant_graph(*_args, **_kwargs):
+        raise GoalSpecInvariantError() from RuntimeError("private caller material")
+
+    monkeypatch.setattr(
+        "enterprise_agent.application.execute_run.build_graph", invariant_graph
+    )
+    run_id = _submit(container)
+
+    execute_run(container, run_id, "worker-a")
+
+    state = container.runs.get_run_unscoped(run_id).state_json
+    assert container.runs.get_run_view("tenant-a", run_id).status == RunStatus.FAILED
+    assert state["error"] == "GoalSpecInvariantError"
+    assert state["error_message"] == (
+        "GoalSpecInvariantError: compiled goal specification violates an invariant"
+    )
+    assert "private caller material" not in state["error_message"]
+    assert "GoalSpecInvariantError" in caplog.text
+    assert "private caller material" not in caplog.text
 
 
 def test_assistant_content_exposes_saved_report_and_search_sources():

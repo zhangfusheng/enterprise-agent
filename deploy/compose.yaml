@@ -30,7 +30,7 @@ services:
       dockerfile: deploy/Dockerfile
     command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000
     environment:
-      EA_ENV: development
+      EA_ENVIRONMENT: development
       EA_DATABASE_URL: postgresql+psycopg://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
       EA_CHECKPOINT_URL: postgresql://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
       EA_ARTIFACT_ROOT: /data/artifacts
@@ -52,7 +52,7 @@ services:
       dockerfile: deploy/Dockerfile
     command: python -m apps.worker.main
     environment:
-      EA_ENV: development
+      EA_ENVIRONMENT: development
       EA_DATABASE_URL: postgresql+psycopg://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
       EA_CHECKPOINT_URL: postgresql://enterprise_agent:enterprise_agent_dev_only@postgres:5432/enterprise_agent
       EA_ARTIFACT_ROOT: /data/artifacts

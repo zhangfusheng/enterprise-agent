@@ -1,0 +1,129 @@
+version: model-matrix-v1
+fixture:
+  url_prefix: "https://fixture.invalid/"
+  document_quote: "This deterministic offline research document exists only for tests."
+notes:
+  - "Inputs are written for the rule parser. Forced mode uses that parser so every model receives the same GoalSpec and route."
+  - "Auto mode uses the configured LLM parser. Router accuracy is scored only in auto mode."
+  - "Direct cases have no tool contract. Tool tasks are not placed in the Direct set."
+  - "S02 and S03 ask analysis to calculate numbers that arrive as user text. The analysis tool accepts only an evidence values series, which this path does not build. A shared failure here is an architecture result, not a model ranking."
+cases:
+  - case_id: D01
+    difficulty: easy
+    input: "请直接回答什么是幂等性？"
+    inputs: []
+    expected_route: direct
+    expected_role: null
+    required_capabilities: []
+    allowed_tools: []
+    validation:
+      no_tools: true
+      rubric:
+        all: ["幂等"]
+        any: ["重复", "多次", "一次"]
+    expected_result: "同一操作重复执行后，结果与只执行一次相同。"
+    judge: rubric
+  - case_id: D02
+    difficulty: medium
+    input: "详细解释一下 Raft 算法"
+    inputs: []
+    expected_route: direct
+    expected_role: null
+    required_capabilities: []
+    allowed_tools: []
+    validation:
+      no_tools: true
+      rubric:
+        minimum_hits: 2
+        any: ["共识", "领导者", "leader", "选举", "日志", "复制"]
+    expected_result: "Raft 是共识算法，包含领导者选举和日志复制。"
+    judge: rubric
+  - case_id: D03
+    difficulty: easy
+    input: "总结下面直接粘贴的文字：系统需要保持幂等"
+    inputs: []
+    expected_route: direct
+    expected_role: null
+    required_capabilities: []
+    allowed_tools: []
+    validation:
+      no_tools: true
+      rubric:
+        all: ["幂等"]
+    expected_result: "摘要保留系统需要保持幂等。"
+    judge: rubric
+  - case_id: S01
+    difficulty: easy
+    input: "请搜索网页并返回来源"
+    inputs: []
+    expected_route: single
+    expected_role: research
+    required_capabilities: [web_search]
+    allowed_tools: [web_search, web_fetch, workspace_read]
+    validation:
+      tools_any: [web_search, web_fetch]
+      fixture_url: true
+    expected_result: "至少一条 https://fixture.invalid/ 来源。"
+    judge: automatic
+  - case_id: S02
+    difficulty: medium
+    input: "请根据 10、20、30 计算均值并写出报告"
+    inputs:
+      - name: series.csv
+        content: "amount\n10\n20\n30"
+    expected_route: single
+    expected_role: analysis
+    required_capabilities: [calculate]
+    allowed_tools: [calculate, save_report]
+    validation:
+      tools_all: [calculate]
+      calculation:
+        operation: mean
+        values: [10, 20, 30]
+        value: 20
+    expected_result: "mean(10, 20, 30) = 20"
+    judge: automatic
+  - case_id: S03
+    difficulty: medium
+    input: "请根据 10 和 12 计算增长率并写出报告"
+    inputs: []
+    expected_route: single
+    expected_role: analysis
+    required_capabilities: [calculate]
+    allowed_tools: [calculate, save_report]
+    validation:
+      tools_all: [calculate]
+      calculation:
+        operation: growth_rate
+        values: [10, 12]
+        value: 0.2
+    expected_result: "growth_rate(10, 12) = 0.2"
+    judge: automatic
+  - case_id: M01
+    difficulty: hard
+    input: "请搜索网页并比较方案，生成报告"
+    inputs: []
+    expected_route: multi
+    expected_role: null
+    required_capabilities: [analysis, web_search]
+    allowed_tools: [web_search, web_fetch, workspace_read, calculate, save_report, submit_claims]
+    validation:
+      dag: research_before_analysis
+      tools_any: [web_search, web_fetch]
+      fixture_url: true
+    expected_result: "Research 先于 Analysis，并且结果引用 fixture 来源。"
+    judge: automatic
+  - case_id: M02
+    difficulty: hard
+    input: "请搜索网页并计算增长率"
+    inputs: []
+    expected_route: multi
+    expected_role: null
+    required_capabilities: [calculate, web_search]
+    allowed_tools: [web_search, web_fetch, workspace_read, calculate, save_report, submit_claims]
+    validation:
+      dag: research_before_analysis
+      tools_any: [web_search, web_fetch]
+      fixture_url: true
+    expected_result: "Research 先于 Analysis。fixture 文档没有数值序列，本条不要求算出增长率。"
+    judge: automatic

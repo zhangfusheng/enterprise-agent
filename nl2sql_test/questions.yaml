@@ -1,0 +1,20 @@
+# Read-only questions against the local nl2sql sample schema.
+# expect_rows lists values that must appear together in one result row.
+# Column names are ignored so equivalent aliases still pass.
+questions:
+  - id: department_headcount
+    question: 每个部门有多少员工？
+    expect_rows:
+      - ["研发", "2"]
+      - ["销售", "2"]
+      - ["财务", "1"]
+  - id: customer_order_amount
+    question: 每个客户的订单总金额是多少？
+    expect_rows:
+      - ["星河科技", "74000"]
+      - ["海川贸易", "124000"]
+      - ["南山制造", "12000"]
+  - id: top_product
+    question: 销售额最高的产品是哪一个？只返回产品名称和销售额。
+    expect_rows:
+      - ["数据分析平台", "150000"]
